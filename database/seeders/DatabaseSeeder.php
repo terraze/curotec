@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             TaskStatusSeeder::class,
             BoardSeeder::class,
             BoardTaskStatusSeeder::class,
+            TaskSeeder::class,
         ]);
     }
 }

@@ -3,58 +3,59 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Board;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Models\Task;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class BoardController extends Controller
+class TaskController extends Controller
 {
     /**
-     * List all boards
+     * Get all tasks.
      */
     public function index(): JsonResponse
     {
-        $boards = Board::all();
-
+        $tasks = Task::all();
         return response()->json([
             'status' => 'success',
-            'data' => $boards,
+            'data' => $tasks,
         ]);
     }
 
     /**
-     * Get a specific board by ID
+     * Get a specific task.
      */
     public function show(int $id): JsonResponse
     {
         try {
-            $board = Board::with(['taskStatus', 'tasks'])->findOrFail($id);
-            
+            $task = Task::findOrFail($id);
+
             return response()->json([
                 'status' => 'success',
-                'data' => $board,
+                'data' => $task,
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Board not found',
+                'message' => 'Task not found',
             ], Response::HTTP_NOT_FOUND);
         }
     }
 
     /**
-     * Create a new board
+     * Create a new task.
      */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'board_id' => 'required|exists:boards,id', 
+            'task_status_id' => 'exists:task_statuses,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string'
         ]);
 
-        $board = Board::create([
+        $task = Task::create([
             ...$validated,
             'created_by' => 1, // TODO Hardcoding user ID as 1 for now
             'created_at' => now(),
@@ -62,43 +63,43 @@ class BoardController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Board created successfully',
-            'data' => $board,
+            'message' => 'Task created successfully',
+            'data' => $task,
         ], Response::HTTP_CREATED);
     }
 
     /**
-     * Delete a specific board
+     * Delete a specific task
      */
     public function destroy(int $id): JsonResponse
     {
         try {
-            $board = Board::findOrFail($id);
-            $board->delete();
+            $task = Task::findOrFail($id);
+            $task->delete();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Board deleted successfully',
+                'message' => 'Task deleted successfully',
             ], Response::HTTP_NO_CONTENT);
 
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Board not found',
+                'message' => 'Task not found',
             ], Response::HTTP_NOT_FOUND);
         }
     }
 
     /**
-     * Delete all boards
+     * Delete all tasks
      */
     public function destroyAll(): JsonResponse
     {
-        Board::truncate();
+        Task::truncate();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'All boards have been deleted',
+            'message' => 'All tasks have been deleted',
         ], Response::HTTP_NO_CONTENT);
     }
 }

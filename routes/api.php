@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BoardController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,15 @@ Route::prefix('boards')->group(function () {
     Route::post('/', [BoardController::class, 'store']);
     Route::delete('/{board}', [BoardController::class, 'destroy']);
     Route::delete('/', [BoardController::class, 'destroyAll']);
+});
+
+// Tasks API
+Route::prefix('tasks')->group(function () {
+    Route::get('/', [TaskController::class, 'index']);
+    Route::get('/{task}', [TaskController::class, 'show']);
+    Route::post('/', [TaskController::class, 'store']);
+    Route::delete('/{task}', [TaskController::class, 'destroy']);
+    Route::delete('/', [TaskController::class, 'destroyAll']);
 });
 
 /*
