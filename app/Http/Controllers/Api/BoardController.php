@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Board;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BoardController extends Controller
 {
@@ -17,10 +17,10 @@ class BoardController extends Controller
     public function index(): JsonResponse
     {
         $boards = Board::all();
-        
+
         return response()->json([
             'status' => 'success',
-            'data' => $boards
+            'data' => $boards,
         ]);
     }
 
@@ -31,19 +31,19 @@ class BoardController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $board = Board::create([
             ...$validated,
             'created_by' => 1, // TODO Hardcoding user ID as 1 for now
-            'created_at' => now()
+            'created_at' => now(),
         ]);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Board created successfully',
-            'data' => $board
+            'data' => $board,
         ], Response::HTTP_CREATED);
     }
 
@@ -54,15 +54,15 @@ class BoardController extends Controller
     {
         try {
             $board = Board::findOrFail($id);
-            
+
             return response()->json([
                 'status' => 'success',
-                'data' => $board
+                'data' => $board,
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Board not found'
+                'message' => 'Board not found',
             ], Response::HTTP_NOT_FOUND);
         }
     }
@@ -78,12 +78,12 @@ class BoardController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Board deleted successfully'
+                'message' => 'Board deleted successfully',
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Board not found'
+                'message' => 'Board not found',
             ], Response::HTTP_NOT_FOUND);
         }
     }
@@ -97,7 +97,7 @@ class BoardController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'All boards have been deleted'
+            'message' => 'All boards have been deleted',
         ]);
     }
-} 
+}

@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\BoardController;
+use App\Http\Controllers\Api\HealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Health check endpoint
-Route::get('/health', [HealthController::class, 'check']); 
+Route::get('/health', [HealthController::class, 'check']);
 
 // Boards API
 Route::prefix('boards')->group(function () {

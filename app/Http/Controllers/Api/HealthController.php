@@ -12,7 +12,7 @@ class HealthController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'API is running normally',
-            'server_time' => now()->toIso8601String()
+            'server_time' => now()->toIso8601String(),
         ]);
     }
-} 
+}

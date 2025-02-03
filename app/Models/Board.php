@@ -28,4 +28,4 @@ class Board extends Model
             ->withPivot('sort_order')
             ->using(BoardTaskStatus::class);
     }
-} 
+}

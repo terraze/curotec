@@ -13,4 +13,4 @@ class TaskStatusSeeder extends Seeder
         TaskStatus::create(['name' => 'In Progress']);
         TaskStatus::create(['name' => 'Closed']);
     }
-} 
+}

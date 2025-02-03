@@ -20,4 +20,4 @@ class TaskStatus extends Model
             ->withPivot('sort_order')
             ->using(BoardTaskStatus::class);
     }
-} 
+}

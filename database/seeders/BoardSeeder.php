@@ -14,14 +14,14 @@ class BoardSeeder extends Seeder
 
         Board::create([
             'name' => 'Board 1',
-            'description' => 'First board, created by ' . $users[0]->name,
+            'description' => 'First board, created by '.$users[0]->name,
             'created_by' => $users[0]->id,
         ]);
 
         Board::create([
             'name' => 'Board 2',
-            'description' => 'Second board, created by ' . $users[1]->name,
+            'description' => 'Second board, created by '.$users[1]->name,
             'created_by' => $users[1]->id,
         ]);
     }
-} 
+}

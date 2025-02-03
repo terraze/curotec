@@ -15,4 +15,4 @@ class BoardTaskStatus extends Pivot
         'task_status_id',
         'sort_order',
     ];
-} 
+}

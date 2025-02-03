@@ -28,4 +28,4 @@ class BoardTaskStatusSeeder extends Seeder
             }
         }
     }
-} 
+}
