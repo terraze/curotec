@@ -136,4 +136,32 @@ class TaskController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
     }
+
+    /**
+     * Update task assignee
+     */
+    public function updateAssignee(Request $request, Task $task): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'assignee_id' => 'nullable|integer|exists:users,id',
+            ]);
+
+            $task->update([
+                'assignee_id' => $validated['assignee_id'] ?? null
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Task assignee updated successfully',
+                'data' => $task->fresh()->load('assignee')
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid user',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
