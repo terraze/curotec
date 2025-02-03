@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Models\BoardTaskStatus;
 
 class TaskController extends Controller
 {
@@ -101,5 +102,38 @@ class TaskController extends Controller
             'status' => 'success',
             'message' => 'All tasks have been deleted',
         ], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Update task status
+     */
+    public function updateStatus(Request $request, Task $task): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'task_status_id' => 'required|integer|exists:board_task_status,id',
+            ]);
+
+            // Verify that the new status belongs to the same board as the task
+            $boardTaskStatus = BoardTaskStatus::where('id', $validated['task_status_id'])
+                ->where('board_id', $task->board_id)
+                ->firstOrFail();
+
+            $task->update([
+                'task_status_id' => $validated['task_status_id']
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Task status updated successfully',
+                'data' => $task->fresh()
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid status for this board',
+            ], Response::HTTP_BAD_REQUEST);
+        }
     }
 }
