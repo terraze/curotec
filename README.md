@@ -35,7 +35,7 @@ Node and NPM will be installed on the Docker container. If you decide to install
 
 ```
 npm install
-npm run prod
+npm run dev
 ```
 
 #### Run
