@@ -191,7 +191,7 @@ onUnmounted(() => {
                                 <div v-if="data[status.task_status_id].assignee_id">
                                     Assigned to: {{ data[status.task_status_id].assignee_name }}
                                 </div>
-                                <Button label="DELETE" severity="danger" class="ml-2 mb-4" @click="deleteTask(data[status.task_status_id].id)"></Button>
+                                <Button label="DELETE" severity="danger" class="mt-4" @click="deleteTask(data[status.task_status_id].id)"></Button>
                             </template>
                         </Card>
                     </template>
