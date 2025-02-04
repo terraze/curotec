@@ -210,6 +210,7 @@ onUnmounted(() => {
                 <Column v-for="status in sortedTaskStatus" 
                         :key="status.id" 
                         :header="status.name"
+                        class="w-1/3"
                         >
                     <template #body="{ data }">
                         <div class="task-card-container"
