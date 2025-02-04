@@ -40,6 +40,16 @@ defineOptions({
                     {{ formatDate(data.updated_at) }}
                 </template>
             </Column>
+            <Column header="">
+                <template #body="{ data }">
+                    <router-link 
+                      :to="{ name: 'board', params: { id: data.id }}" 
+                      class="view-board-btn"
+                    >
+                    <Button label="Go to Board"></Button>
+                    </router-link>
+                </template>
+            </Column>
         </DataTable>      
     </div>
   </div>
