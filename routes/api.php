@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\BoardController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\TaskController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Health check endpoint
@@ -27,6 +27,12 @@ Route::prefix('tasks')->group(function () {
     Route::delete('/', [TaskController::class, 'destroyAll']);
     Route::put('/{task}/status', [TaskController::class, 'updateStatus']);
     Route::put('/{task}/assignee', [TaskController::class, 'updateAssignee']);
+});
+
+// Users API
+Route::prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{user}', [UserController::class, 'show']);
 });
 
 /*
