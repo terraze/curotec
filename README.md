@@ -15,27 +15,27 @@ Assessment: https://talent.curotec.com/candidate/assessment/171 (Collaborative K
 This projects uses Laravel Sail. In order to run the project using Sail, you need to have Docker and Docker Compose installed. Here's a list of all software you might need:
 
 * Docker
-* Docker Compose
 * PHP 8.3
 * Composer
 
-If running on Windows, you might need to install WSL2. 
+If running on Windows, you might need to install WSL2 and execute the commands inside the WSL2 terminal. 
 
 #### Install
 
-Execute these commands on root:
+Execute these commands on root of this project:
 
 ```
 composer install
 ./vendor/bin/sail up -d
 ./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan db:seed
 ```
 
 Node and NPM will be installed on the Docker container. If you decide to install all software manually, also run these:
 
 ```
 npm install
-npm run prod
+npm run dev
 ```
 
 #### Run

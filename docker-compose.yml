@@ -64,6 +64,17 @@ services:
                 - ping
             retries: 3
             timeout: 5s
+    node:
+        image: node:latest
+        container_name: ${APP_NAME}_node
+        volumes:
+            - '.:/var/www/html'
+            - './docker/node/start.sh:/start.sh'
+        working_dir: /var/www/html
+        networks:
+            - sail
+        tty: true
+        command: ["/bin/bash", "/start.sh"]
 networks:
     sail:
         driver: bridge
