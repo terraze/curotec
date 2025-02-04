@@ -129,6 +129,20 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       } finally {
         loadingStore.stopLoading()
       }
+    },
+
+    async updateTaskAssignee(taskId: number, assigneeId: number | null) {
+      const loadingStore = useLoadingStore()
+      loadingStore.startLoading()
+      try {
+        await axios.put(`/api/tasks/${taskId}/assignee`, { assignee_id: assigneeId });
+        await this.fetchBoardDetails(this.board!.id);
+      } catch (error) {
+        console.error('Failed to update task assignee:', error);
+        throw error;
+      } finally {
+        loadingStore.stopLoading()
+      }
     }
   }
 }) 

@@ -26,7 +26,7 @@ class BoardController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $boards,
-        ]);
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -63,7 +63,7 @@ class BoardController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => $board,
-            ]);
+            ], Response::HTTP_OK);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

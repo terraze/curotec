@@ -14,6 +14,7 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from "primevue/useconfirm"
 import { useLoadingStore } from '@/stores/loadingStore'
+import UserSelect from '@/components/UserSelect.vue'
 
 defineOptions({
     name: 'BoardDetailsView'
@@ -231,10 +232,13 @@ onUnmounted(() => {
                                 </template>
                                 <template #content>
                                     <p>{{ data[status.task_status_id].description }}</p>
-                                    <div v-if="data[status.task_status_id].assignee_id">
-                                        Assigned to: {{ data[status.task_status_id].assignee_name }}
-                                    </div>
-                                    <Button label="DELETE" severity="danger" class="mt-4" @click="deleteTask(data[status.task_status_id].id)"></Button>
+                                    <strong>Assigned to:</strong>
+                                    <UserSelect
+                                        v-model="data[status.task_status_id].assignee_id"
+                                        placeholder="Select Assignee"
+                                        class="mt-4 ml-4 w-1/2"
+                                        @change="(value) => boardDetailsStore.updateTaskAssignee(data[status.task_status_id].id, value)" />
+                                    <Button label="DELETE" severity="danger" class="mt-4 ml-4" @click="deleteTask(data[status.task_status_id].id)"></Button>
                                 </template>
                             </Card>
                         </div>

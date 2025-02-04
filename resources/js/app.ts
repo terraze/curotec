@@ -18,11 +18,16 @@ import Lara from '@primevue/themes/lara'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import Dropdown from 'primevue/dropdown'
 import '@mdi/font/css/materialdesignicons.css'
 
-// App
+const pinia = createPinia()
 const app = createApp(App)
-app.use(createPinia())
+
+// Use Pinia before any store might be accessed
+app.use(pinia)
+
+// Then other plugins
 app.use(router)
 app.use(PrimeVue, {
     unstyled: false,
@@ -42,7 +47,7 @@ app.component('ConfirmDialog', ConfirmDialog)
 app.component('Dialog', Dialog)
 app.component('InputText', InputText)
 app.component('Textarea', Textarea)
-
+app.component('Dropdown', Dropdown)
 // PrimeVue services
 app.use(ConfirmationService)
 

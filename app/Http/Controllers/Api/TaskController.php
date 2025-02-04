@@ -27,7 +27,7 @@ class TaskController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $tasks,
-        ]);
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -43,7 +43,7 @@ class TaskController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => $task,
-            ]);
+            ], Response::HTTP_OK);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

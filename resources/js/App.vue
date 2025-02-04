@@ -1,13 +1,23 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 import NavBar from './components/NavBar.vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
+import { useUserStore } from '@/stores/userStore'
 
 export default defineComponent({
   name: 'App',
   components: {
     NavBar,
     LoadingOverlay
+  },
+  setup() {
+    const userStore = useUserStore()
+
+    onMounted(async () => {
+      await userStore.fetchUsers()
+    })
+
+    return {}
   }
 })
 </script>
