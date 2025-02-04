@@ -58,11 +58,6 @@ const tableData = computed(() => {
     return rows
 })
 
-const handleReorder = async (event: any) => {
-    // TODO: Implement API call to update task order
-    console.log('Reorder event:', event)
-}
-
 const showCreateDialog = ref(false)
 const newTask = ref({
     title: '',
@@ -98,6 +93,35 @@ const deleteTask = async (taskId: number) => {
             await boardDetailsStore.deleteTask(taskId)
         }
     })
+}
+
+const handleDrop = async (event: DragEvent, newStatusId: number) => {
+    const taskId = event.dataTransfer?.getData('taskId')
+    if (!taskId) return
+
+    try {
+        await boardDetailsStore.updateTaskStatus(parseInt(taskId, 10), newStatusId)
+    } catch (error) {
+        console.error('Failed to update task status:', error)
+    }
+}
+
+const onDragOver = (event: DragEvent) => {
+    if (event.currentTarget instanceof HTMLElement) {
+        event.currentTarget.classList.add('drag-over')
+    }
+}
+
+const onDragEnter = (event: DragEvent) => {
+    if (event.currentTarget instanceof HTMLElement) {
+        event.currentTarget.classList.add('drag-over')
+    }
+}
+
+const onDragLeave = (event: DragEvent) => {
+    if (event.currentTarget instanceof HTMLElement) {
+        event.currentTarget.classList.remove('drag-over')
+    }
 }
 
 onMounted(async () => {
@@ -179,21 +203,35 @@ onUnmounted(() => {
                 <Column v-for="status in sortedTaskStatus" 
                         :key="status.id" 
                         :header="status.name"
-                        class="task-card-container">
+                        >
                     <template #body="{ data }">
-                        <Card v-if="data[status.task_status_id]"
-                              class="task-card m-2">
-                            <template #title>
-                                {{ data[status.task_status_id].title + ' id(' + data[status.task_status_id].id + ')' }}
-                            </template>
-                            <template #content>
-                                <p>{{ data[status.task_status_id].description }}</p>
-                                <div v-if="data[status.task_status_id].assignee_id">
-                                    Assigned to: {{ data[status.task_status_id].assignee_name }}
-                                </div>
-                                <Button label="DELETE" severity="danger" class="mt-4" @click="deleteTask(data[status.task_status_id].id)"></Button>
-                            </template>
-                        </Card>
+                        <div class="task-card-container"
+                             @drop.prevent="handleDrop($event, status.task_status_id)"
+                             @dragover.prevent="onDragOver"
+                             @dragenter.prevent="onDragEnter"
+                             @dragleave.prevent="onDragLeave">
+                            <Card v-if="data[status.task_status_id]"
+                                  class="task-card m-2"
+                                  draggable="true"
+                                  @dragstart="(e) => {
+                                      e.dataTransfer.effectAllowed = 'move'
+                                      e.dataTransfer.setData('taskId', data[status.task_status_id].id.toString())
+                                  }"
+                                  :pt="{
+                                      root: { style: 'cursor: move' }
+                                  }">
+                                <template #title>
+                                    {{ data[status.task_status_id].title + ' id(' + data[status.task_status_id].id + ')' }}
+                                </template>
+                                <template #content>
+                                    <p>{{ data[status.task_status_id].description }}</p>
+                                    <div v-if="data[status.task_status_id].assignee_id">
+                                        Assigned to: {{ data[status.task_status_id].assignee_name }}
+                                    </div>
+                                    <Button label="DELETE" severity="danger" class="mt-4" @click="deleteTask(data[status.task_status_id].id)"></Button>
+                                </template>
+                            </Card>
+                        </div>
                     </template>
                 </Column>
             </DataTable>
@@ -203,11 +241,37 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.task-card {
-    min-width: 200px;
+.task-card-container {
+    min-height: 100px;
+    height: 100%;
+    width: 100%;
+    padding: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.drag-over {
+    background-color: rgba(0, 128, 128, 0.1);
+    border: 2px dashed teal;
 }
 
 .task-card.p-card.p-component {
-  background-color: theme('colors.teal.900') !important;
+    background-color: theme('colors.teal.900') !important;
+}
+
+.task-card.p-card.p-component:hover {
+    background-color: theme('colors.teal.800') !important;
+}
+
+.task-card {
+    min-width: 200px;
+    transition: transform 0.2s;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+}
+
+.task-card[draggable="true"]:active {
+    cursor: grabbing;
 }
 </style> 

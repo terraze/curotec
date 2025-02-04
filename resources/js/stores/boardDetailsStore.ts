@@ -56,15 +56,16 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
 
     async updateTaskStatus(taskId: number, newStatusId: number) {
       try {
-        await axios.patch(`/api/tasks/${taskId}`, {
+        await axios.put(`/api/tasks/${taskId}/status`, {
           task_status_id: newStatusId
         })
-        // Refresh board details after update
-        if (this.board) {
-          await this.fetchBoardDetails(this.board.id)
+        
+        // Update the local state
+        const taskIndex = this.board?.tasks.findIndex(t => t.id === taskId)
+        if (taskIndex !== undefined && taskIndex !== -1 && this.board) {
+          this.board.tasks[taskIndex].task_status_id = newStatusId
         }
       } catch (error) {
-        this.error = error as Error
         throw error
       }
     },
