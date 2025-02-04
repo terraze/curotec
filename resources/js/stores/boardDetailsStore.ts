@@ -1,38 +1,63 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { Board, BoardResponse } from '@/types/boardDetails'
 import axios from 'axios'
+import { ApiError } from '@/types/errors/ApiError'
 
-export const useBoardDetailsStore = defineStore('boardDetails', () => {
-    const board = ref<Board | null>(null)
-    const loading = ref(false)
-    const error = ref<string | null>(null)
+interface Board {
+  id: number
+  name: string
+  description: string
+  created_by: number
+  created_at: string
+  updated_at: string
+}
 
-    async function fetchBoard(id: number) {
-        try {
-            loading.value = true
-            error.value = null
-            const response = await axios.get<BoardResponse>(`/api/boards/${id}`)
-            board.value = response.data.data
-        } catch (e) {
-            error.value = 'Failed to load board'
-            console.error('Error loading board:', e)
-        } finally {
-            loading.value = false
+interface ApiResponse {
+  status: string
+  data: Board
+}
+
+interface BoardDetailsState {
+  board: Board | null
+  loading: boolean
+  error: string | null
+}
+
+export const useBoardDetailsStore = defineStore('boardDetails', {
+  state: (): BoardDetailsState => ({
+    board: null,
+    loading: false,
+    error: null
+  }),
+
+  actions: {
+    async fetchBoard(id: number) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        const response = await axios.get<ApiResponse>(`/api/boards/${id}`)
+        if (response.data.status !== ApiError.SUCCESS_STATUS) {
+          throw new ApiError(response.data.status)
         }
-    }
 
-    function reset() {
-        board.value = null
-        error.value = null
-        loading.value = false
-    }
+        this.board = response.data.data
+        
+      } catch (err) {
+        if (err instanceof ApiError) {
+          this.error = err.message
+        } else {
+          this.error = 'Failed to load board'
+        }
+        console.error('Error loading board:', err)
+      } finally {
+        this.loading = false
+      }
+    },
 
-    return {
-        board,
-        loading,
-        error,
-        fetchBoard,
-        reset
+    reset() {
+      this.board = null
+      this.error = null
+      this.loading = false
     }
+  }
 }) 
