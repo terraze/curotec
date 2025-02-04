@@ -3,6 +3,7 @@ import axios from 'axios'
 import { ApiError } from '@/types/errors/ApiError'
 import { Task } from '@/types/boardDetails'
 import type { BoardDetails } from '@/types/boardDetails'
+import { useLoadingStore } from '@/stores/loadingStore'
 
 interface ApiResponse {
   status: string
@@ -31,8 +32,8 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
 
   actions: {
     async fetchBoardDetails(boardId: number) {
-      this.loading = true
-      this.error = null
+      const loadingStore = useLoadingStore()
+      loadingStore.startLoading()
       
       try {
         const response = await axios.get<ApiResponse>(`/api/boards/${boardId}`)
@@ -50,7 +51,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
         }
         console.error('Error loading board:', err)
       } finally {
-        this.loading = false
+        loadingStore.stopLoading()
       }
     },
 
@@ -77,6 +78,9 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
     },
 
     async createTask(taskData: NewTask) {
+      const loadingStore = useLoadingStore()
+      loadingStore.startLoading()
+      
       try {
         const response = await axios.post<{status: string, data: Task}>('/api/tasks', taskData)
         
@@ -98,10 +102,15 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
         }
         console.error('Error creating task:', error)
         throw error
+      } finally {
+        loadingStore.stopLoading()
       }
     },
 
     async deleteTask(taskId: number) {
+      const loadingStore = useLoadingStore()
+      loadingStore.startLoading()
+      
       try {
         const response = await axios.delete<{status: string}>(`/api/tasks/${taskId}`)
 
@@ -117,6 +126,8 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
         }
         console.error('Error deleting task:', error)
         throw error
+      } finally {
+        loadingStore.stopLoading()
       }
     }
   }

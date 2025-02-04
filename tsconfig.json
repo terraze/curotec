@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["resources/js/*"]
+      "@/*": ["./resources/js/*"]
     },
     "lib": ["esnext", "dom"],
     "skipLibCheck": true

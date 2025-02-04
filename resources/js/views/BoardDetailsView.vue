@@ -13,6 +13,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from "primevue/useconfirm"
+import { useLoadingStore } from '@/stores/loadingStore'
 
 defineOptions({
     name: 'BoardDetailsView'
@@ -99,10 +100,15 @@ const handleDrop = async (event: DragEvent, newStatusId: number) => {
     const taskId = event.dataTransfer?.getData('taskId')
     if (!taskId) return
 
+    const loadingStore = useLoadingStore()
+    loadingStore.startLoading()
+    
     try {
         await boardDetailsStore.updateTaskStatus(parseInt(taskId, 10), newStatusId)
     } catch (error) {
         console.error('Failed to update task status:', error)
+    } finally {
+        loadingStore.stopLoading()
     }
 }
 
