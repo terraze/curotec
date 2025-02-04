@@ -15,4 +15,9 @@ class BoardTaskStatus extends Pivot
         'task_status_id',
         'sort_order',
     ];
+
+    public function taskStatus()
+    {
+        return $this->belongsTo(TaskStatus::class, 'task_status_id');
+    }
 }

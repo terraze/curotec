@@ -32,7 +32,7 @@ class Board extends Model
 
     public function taskStatus(): HasMany
     {
-        return $this->hasMany(BoardTaskStatus::class);
+        return $this->hasMany(BoardTaskStatus::class)->with('taskStatus');
     }
 
     public function tasks(): HasMany

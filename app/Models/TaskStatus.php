@@ -12,6 +12,7 @@ class TaskStatus extends Model
 
     protected $fillable = [
         'name',
+        'sort_order',
     ];
 
     public function boards(): BelongsToMany

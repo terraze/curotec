@@ -101,13 +101,12 @@ onUnmounted(() => {
                         <Card v-if="data[status.task_status_id]"
                               class="task-card m-2">
                             <template #title>
-                                {{ data[status.task_status_id].title + ' ' + status.task_status_id }}
+                                {{ data[status.task_status_id].title + ' id(' + status.task_status_id + ')' }}
                             </template>
                             <template #content>
                                 <p>{{ data[status.task_status_id].description }}</p>
-                                <div v-if="data[status.task_status_id].assignee_id" 
-                                     class="text-sm text-gray-600">
-                                    Assigned to: {{ data[status.task_status_id].assignee_id }}
+                                <div v-if="data[status.task_status_id].assignee_id">
+                                    Assigned to: {{ data[status.task_status_id].assignee_name }}
                                 </div>
                             </template>
                         </Card>

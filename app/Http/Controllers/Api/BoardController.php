@@ -35,9 +35,30 @@ class BoardController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $board = Board::with(['taskStatus', 'tasks', 'creator:id,name'])->findOrFail($id);
+            $board = Board::with([
+                'taskStatus.taskStatus',
+                'tasks',
+                'creator:id,name'
+            ])->findOrFail($id);
+            
             $board->created_by = $board->creator->name;
             unset($board->creator);
+
+            // Transform task_status to include name at the root level
+            $board->taskStatus->transform(function ($taskStatus) {
+                $taskStatus->name = $taskStatus->taskStatus->name;
+                unset($taskStatus->taskStatus);
+                return $taskStatus;
+            });
+            
+
+            // Transform tasks to include assignee_name at root level
+            $board->tasks->transform(function ($task) {
+                $task->assignee_name = $task->assignee ? $task->assignee->name : null;
+                unset($task->assignee);
+                return $task;
+            });           
+    
             
             return response()->json([
                 'status' => 'success',

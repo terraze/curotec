@@ -1,5 +1,6 @@
 export interface TaskStatus {
     id: number
+    name: string
     board_id: number
     task_status_id: number
     sort_order: number
@@ -14,6 +15,7 @@ export interface Task {
     board_id: number
     task_status_id: number
     assignee_id: number | null
+    assignee_name: string | null
     created_by: number
     created_at: string
     updated_at: string
