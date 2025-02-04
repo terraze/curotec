@@ -26,14 +26,11 @@ const deleteTask = async (taskId: number) => {
 </script>
 
 <template>
-    <Card class="task-card m-2"
+    <Card class="task-card m-2 min-w-[200px] cursor-move transform transition-transform hover:-translate-y-0.5"
           draggable="true"
           @dragstart="(e) => {
               e.dataTransfer.effectAllowed = 'move'
               e.dataTransfer.setData('taskId', task.id.toString())
-          }"
-          :pt="{
-              root: { style: 'cursor: move' }
           }">
         <template #title>
             {{ task.title + ' id(' + task.id + ')' }}
@@ -49,7 +46,7 @@ const deleteTask = async (taskId: number) => {
             <Button label="DELETE" severity="danger" class="mt-4 ml-4" @click="deleteTask(task.id)"></Button>
         </template>
     </Card>
-</template>
+</template> 
 
 <style scoped>
 .task-card.p-card.p-component {
@@ -59,17 +56,4 @@ const deleteTask = async (taskId: number) => {
 .task-card.p-card.p-component:hover {
     background-color: theme('colors.teal.800') !important;
 }
-
-.task-card {
-    min-width: 200px;
-    transition: transform 0.2s;
-}
-
-.task-card:hover {
-    transform: translateY(-2px);
-}
-
-.task-card[draggable="true"]:active {
-    cursor: grabbing;
-}
-</style> 
+</style>
