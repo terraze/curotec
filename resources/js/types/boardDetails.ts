@@ -19,7 +19,7 @@ export interface Task {
     updated_at: string
 }
 
-export interface Board {
+export interface BoardDetails {
     id: number
     name: string
     description: string
@@ -32,5 +32,5 @@ export interface Board {
 
 export interface BoardResponse {
     status: string
-    data: Board
+    data: BoardDetails
 } 

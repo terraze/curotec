@@ -1,25 +1,17 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { ApiError } from '@/types/errors/ApiError'
-
-interface Board {
-  id: number
-  name: string
-  description: string
-  created_by: number
-  created_at: string
-  updated_at: string
-}
+import type { BoardDetails } from '@/types/boardDetails'
 
 interface ApiResponse {
   status: string
-  data: Board
+  data: BoardDetails
 }
 
 interface BoardDetailsState {
-  board: Board | null
+  board: BoardDetails | null
   loading: boolean
-  error: string | null
+  error: Error | null
 }
 
 export const useBoardDetailsStore = defineStore('boardDetails', {
@@ -30,12 +22,12 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
   }),
 
   actions: {
-    async fetchBoard(id: number) {
+    async fetchBoardDetails(boardId: number) {
       this.loading = true
       this.error = null
       
       try {
-        const response = await axios.get<ApiResponse>(`/api/boards/${id}`)
+        const response = await axios.get<ApiResponse>(`/api/boards/${boardId}`)
         if (response.data.status !== ApiError.SUCCESS_STATUS) {
           throw new ApiError(response.data.status)
         }
@@ -44,13 +36,28 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
         
       } catch (err) {
         if (err instanceof ApiError) {
-          this.error = err.message
+          this.error = err as Error
         } else {
-          this.error = 'Failed to load board'
+          this.error = new Error('Failed to load board')
         }
         console.error('Error loading board:', err)
       } finally {
         this.loading = false
+      }
+    },
+
+    async updateTaskStatus(taskId: number, newStatusId: number) {
+      try {
+        await axios.patch(`/api/tasks/${taskId}`, {
+          task_status_id: newStatusId
+        })
+        // Refresh board details after update
+        if (this.board) {
+          await this.fetchBoardDetails(this.board.id)
+        }
+      } catch (error) {
+        this.error = error as Error
+        throw error
       }
     },
 
