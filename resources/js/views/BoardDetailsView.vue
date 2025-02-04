@@ -95,7 +95,7 @@ onUnmounted(() => {
             <DataTable :value="tableData" tableStyle="min-width: 50rem">
                 <Column v-for="status in sortedTaskStatus" 
                         :key="status.id" 
-                        :header="'Status ' + status.task_status_id"
+                        :header="status.name"
                         class="task-card-container">
                     <template #body="{ data }">
                         <Card v-if="data[status.task_status_id]"
