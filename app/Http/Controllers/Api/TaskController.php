@@ -17,7 +17,13 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tasks = Task::all();
+        $tasks = Task::with('creator:id,name')->get()
+            ->map(function ($task) {
+                $task->created_by = $task->creator->name;
+                unset($task->creator);
+                return $task;
+            });
+
         return response()->json([
             'status' => 'success',
             'data' => $tasks,
@@ -30,7 +36,9 @@ class TaskController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $task = Task::findOrFail($id);
+            $task = Task::with('creator:id,name')->findOrFail($id);
+            $task->created_by = $task->creator->name;
+            unset($task->creator);
 
             return response()->json([
                 'status' => 'success',

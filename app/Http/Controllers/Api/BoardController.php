@@ -16,7 +16,12 @@ class BoardController extends Controller
      */
     public function index(): JsonResponse
     {
-        $boards = Board::all();
+        $boards = Board::with('creator:id,name')->get()
+            ->map(function ($board) {
+                $board->created_by = $board->creator->name;
+                unset($board->creator);
+                return $board;
+            });
 
         return response()->json([
             'status' => 'success',
@@ -30,7 +35,9 @@ class BoardController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $board = Board::with(['taskStatus', 'tasks'])->findOrFail($id);
+            $board = Board::with(['taskStatus', 'tasks', 'creator:id,name'])->findOrFail($id);
+            $board->created_by = $board->creator->name;
+            unset($board->creator);
             
             return response()->json([
                 'status' => 'success',

@@ -13,8 +13,8 @@ export default defineComponent({
 <template>
   <div id="app" class="min-h-screen surface-ground">
     <nav-bar></nav-bar>
-    <main class="container mx-auto px-4 py-8">
+    <keep-alive class="container mx-auto px-4 py-8" include="BoardsView">
       <router-view></router-view>
-    </main>
+    </keep-alive>
   </div>
 </template>
