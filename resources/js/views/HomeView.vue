@@ -18,7 +18,7 @@
               rel="noopener noreferrer"
               class="ml-1 inline-flex items-center text-primary hover:text-primary-600"
             >
-                Assessment by Jose Ricardo Junior for Curotec <i class="mdi mdi-open-in-new text-sm"></i>
+                Assessment by Jose Ricardo Junior for Curotec&nbsp;&nbsp;<i class="mdi mdi-open-in-new text-sm"></i>
             </a>
           </p>
 
@@ -42,7 +42,6 @@
             </ul>
           </div>          
         </div>
-        <Button label="View Boards" class="mt-4" />
       </template>
     </Card>
   </div>
