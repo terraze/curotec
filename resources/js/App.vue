@@ -12,9 +12,11 @@ export default defineComponent({
 
 <template>
   <div id="app" class="min-h-screen surface-ground">
-    <nav-bar></nav-bar>
-    <keep-alive class="container mx-auto px-4 py-8" include="BoardsView">
-      <router-view></router-view>
-    </keep-alive>
+    <nav-bar></nav-bar>    
+    <router-view v-slot="{ Component }" class="container mx-auto px-4 py-8">  
+        <keep-alive>  
+        <component :is="Component" />  
+        </keep-alive>  
+  </router-view>
   </div>
 </template>
