@@ -52,6 +52,17 @@ export const useBoardsStore = defineStore('boards', {
       } finally {
         this.loading = false
       }
+    },
+
+    async deleteBoard(boardId: number) {
+      try {
+        await axios.delete(`/api/boards/${boardId}`)
+        // Remove the board from the local state
+        this.boards = this.boards.filter(board => board.id !== boardId)
+      } catch (error) {
+        this.error = 'Failed to delete board'
+        console.error('Error deleting board:', error)
+      }
     }
   }
 }) 

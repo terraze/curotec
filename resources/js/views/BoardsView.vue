@@ -9,6 +9,12 @@ onMounted(() => {
     boardsStore.fetchBoards()
 })
 
+const deleteBoard = async (boardId: number) => {
+    if (confirm('Are you sure you want to delete this board?')) {
+        await boardsStore.deleteBoard(boardId)
+    }
+}
+
 defineOptions({
     name: 'BoardsView'
 })
@@ -48,6 +54,7 @@ defineOptions({
                     >
                     <Button label="Go to Board"></Button>
                     </router-link>
+                    <Button label="DELETE" severity="danger" class="ml-2" @click="deleteBoard(data.id)"></Button>
                 </template>
             </Column>
         </DataTable>      
