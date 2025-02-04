@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBoardDetailsStore } from '@/stores/boardDetailsStore'
 import { storeToRefs } from 'pinia'
 import { formatDate } from '@/utils/dateFormatter'
-import { computed, ref } from 'vue'
-import type { Task, TaskStatus } from '@/types/boardDetails'
+import type { Task } from '@/types/boardDetails'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Card from 'primevue/card'
-import Dialog from 'primevue/dialog'
-import InputText from 'primevue/inputtext'
-import Textarea from 'primevue/textarea'
-import { useConfirm } from "primevue/useconfirm"
+import Button from 'primevue/button'
+import Message from 'primevue/message'
 import { useLoadingStore } from '@/stores/loadingStore'
-import UserSelect from '@/components/UserSelect.vue'
+import TaskCard from '@/components/TaskCard.vue'
+import CreateTaskDialog from '@/components/CreateTaskDialog.vue'
+import ConfirmDialog from 'primevue/confirmdialog'
 
 defineOptions({
     name: 'BoardDetailsView'
@@ -23,8 +22,6 @@ defineOptions({
 const route = useRoute()
 const boardDetailsStore = useBoardDetailsStore()
 const { board, loading, error } = storeToRefs(boardDetailsStore)
-
-const confirm = useConfirm()
 
 // Sort task status by sort_order
 const sortedTaskStatus = computed(() => {
@@ -35,7 +32,6 @@ const sortedTaskStatus = computed(() => {
 const tasksByStatus = computed(() => {
     const grouped: { [key: number]: Task[] } = {}
     board.value?.task_status.forEach(status => {
-        // Group tasks by status to add on proper column
         grouped[status.task_status_id] = board.value?.tasks.filter(
             task => task.task_status_id === status.task_status_id
         ) || []
@@ -48,7 +44,6 @@ const tableData = computed(() => {
     const maxTasks = Math.max(...Object.values(tasksByStatus.value).map(tasks => tasks.length))
     const rows = []
     
-    // Put each task on the proper row (this makes sure all columns will not have empty rows above the tasks)
     for (let i = 0; i < maxTasks; i++) {
         const row: { [key: number]: Task | null } = {}
         sortedTaskStatus.value.forEach(status => {
@@ -61,41 +56,6 @@ const tableData = computed(() => {
 })
 
 const showCreateDialog = ref(false)
-const newTask = ref({
-    title: '',
-    description: '',
-    task_status_id: computed(() => sortedTaskStatus.value[0]?.task_status_id) // Insert on the first status
-})
-
-const createTask = () => {
-    showCreateDialog.value = true
-}
-
-const submitNewTask = async () => {
-    if (!board.value) return
-    
-    await boardDetailsStore.createTask({
-        ...newTask.value,
-        board_id: board.value.id
-    })
-    showCreateDialog.value = false
-    newTask.value = {
-        title: '',
-        description: '',
-        task_status_id: sortedTaskStatus.value[0]?.task_status_id
-    }
-}
-
-const deleteTask = async (taskId: number) => {
-    confirm.require({
-        message: 'Are you sure you want to delete this task?',
-        header: 'Delete Confirmation',
-        icon: 'pi pi-exclamation-triangle',
-        accept: async () => {
-            await boardDetailsStore.deleteTask(taskId)
-        }
-    })
-}
 
 const handleDrop = async (event: DragEvent, newStatusId: number) => {
     const taskId = event.dataTransfer?.getData('taskId')
@@ -154,45 +114,11 @@ onUnmounted(() => {
         </div>
 
         <div v-else-if="board" class="w-2/3 mx-auto">            
-            <Dialog 
-                v-model:visible="showCreateDialog" 
-                modal 
-                header="Create New Task"
-                :style="{ width: '50vw' }"
-            >
-                <div class="flex flex-column gap-2">
-                    <div class="field">
-                        <label for="title">Task Title</label>
-                        <InputText 
-                            id="title" 
-                            v-model="newTask.title" 
-                            required 
-                            class="w-full"
-                        />
-                    </div>
-                    <div class="field">
-                        <label for="description">Description</label>
-                        <Textarea 
-                            id="description" 
-                            v-model="newTask.description" 
-                            rows="3" 
-                            class="w-full"
-                        />
-                    </div>
-                </div>
-                <template #footer>
-                    <Button 
-                        label="Cancel" 
-                        @click="showCreateDialog = false" 
-                        class="p-button-text"
-                    />
-                    <Button 
-                        label="Create" 
-                        @click="submitNewTask" 
-                        :disabled="!newTask.title"
-                    />
-                </template>
-            </Dialog>
+            <CreateTaskDialog
+                v-model="showCreateDialog"
+                :board-id="board.id"
+                :initial-task-status-id="sortedTaskStatus[0]?.task_status_id"
+            />
 
             <Card class="surface-card">
                 <template #title>
@@ -205,7 +131,9 @@ onUnmounted(() => {
                     </div>
                 </template>
             </Card>
-            <Button label="+ New Task" severity="info" class="ml-2 mb-4" @click="createTask()"></Button>
+            
+            <Button label="+ New Task" severity="info" class="ml-2 mb-4" @click="showCreateDialog = true"></Button>
+            
             <DataTable :value="tableData" tableStyle="min-width: 50rem">
                 <Column v-for="status in sortedTaskStatus" 
                         :key="status.id" 
@@ -218,30 +146,10 @@ onUnmounted(() => {
                              @dragover.prevent="onDragOver"
                              @dragenter.prevent="onDragEnter"
                              @dragleave.prevent="onDragLeave">
-                            <Card v-if="data[status.task_status_id]"
-                                  class="task-card m-2"
-                                  draggable="true"
-                                  @dragstart="(e) => {
-                                      e.dataTransfer.effectAllowed = 'move'
-                                      e.dataTransfer.setData('taskId', data[status.task_status_id].id.toString())
-                                  }"
-                                  :pt="{
-                                      root: { style: 'cursor: move' }
-                                  }">
-                                <template #title>
-                                    {{ data[status.task_status_id].title + ' id(' + data[status.task_status_id].id + ')' }}
-                                </template>
-                                <template #content>
-                                    <p>{{ data[status.task_status_id].description }}</p>
-                                    <strong>Assigned to:</strong>
-                                    <UserSelect
-                                        v-model="data[status.task_status_id].assignee_id"
-                                        placeholder="Select Assignee"
-                                        class="mt-4 ml-4 w-1/2"
-                                        @change="(value) => boardDetailsStore.updateTaskAssignee(data[status.task_status_id].id, value)" />
-                                    <Button label="DELETE" severity="danger" class="mt-4 ml-4" @click="deleteTask(data[status.task_status_id].id)"></Button>
-                                </template>
-                            </Card>
+                            <TaskCard 
+                                v-if="data[status.task_status_id]"
+                                :task="data[status.task_status_id]"
+                            />
                         </div>
                     </template>
                 </Column>
@@ -263,26 +171,5 @@ onUnmounted(() => {
 .drag-over {
     background-color: rgba(0, 128, 128, 0.1);
     border: 2px dashed teal;
-}
-
-.task-card.p-card.p-component {
-    background-color: theme('colors.teal.900') !important;
-}
-
-.task-card.p-card.p-component:hover {
-    background-color: theme('colors.teal.800') !important;
-}
-
-.task-card {
-    min-width: 200px;
-    transition: transform 0.2s;
-}
-
-.task-card:hover {
-    transform: translateY(-2px);
-}
-
-.task-card[draggable="true"]:active {
-    cursor: grabbing;
 }
 </style> 
