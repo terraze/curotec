@@ -22,6 +22,11 @@ interface BoardsState {
   error: string | null
 }
 
+interface NewBoard {
+    name: string
+    description: string
+}
+
 export const useBoardsStore = defineStore('boards', {
   state: (): BoardsState => ({
     boards: [],
@@ -63,6 +68,28 @@ export const useBoardsStore = defineStore('boards', {
         this.error = 'Failed to delete board'
         console.error('Error deleting board:', error)
       }
+    },
+
+    async createBoard(boardData: NewBoard) {
+        try {
+            const response = await axios.post<{status: string, data: Board}>('/api/boards', boardData)
+            
+            if(response.data.status !== ApiError.SUCCESS_STATUS){
+                throw new ApiError(response.data.status)
+            }
+
+            // Add the new board to the local state
+            this.boards.push(response.data.data)
+            return response.data.data
+        } catch (error) {
+            if (error instanceof ApiError) {
+                this.error = error.message
+            } else {
+                this.error = 'Failed to create board'
+            }
+            console.error('Error creating board:', error)
+            throw error
+        }
     }
   }
 }) 

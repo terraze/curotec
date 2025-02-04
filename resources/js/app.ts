@@ -12,7 +12,12 @@ import Divider from 'primevue/divider'
 import Message from 'primevue/message'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import ConfirmDialog from 'primevue/confirmdialog'
+import ConfirmationService from 'primevue/confirmationservice'
 import Lara from '@primevue/themes/lara'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
 import '@mdi/font/css/materialdesignicons.css'
 
 // App
@@ -33,6 +38,13 @@ app.component('Divider', Divider)
 app.component('Message', Message)
 app.component('DataTable', DataTable)
 app.component('Column', Column)
+app.component('ConfirmDialog', ConfirmDialog)
+app.component('Dialog', Dialog)
+app.component('InputText', InputText)
+app.component('Textarea', Textarea)
+
+// PrimeVue services
+app.use(ConfirmationService)
 
 // Mount app
 app.mount('#app') 
