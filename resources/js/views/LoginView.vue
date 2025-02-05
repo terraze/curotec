@@ -40,12 +40,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '../stores/authStore';
+import useAuth from '../stores/authStore';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import Password from 'primevue/password';
 
-const auth = useAuthStore();
+const auth = useAuth();
 const router = useRouter();
 const toast = useToast();
 
@@ -53,11 +53,11 @@ const email = ref('');
 const password = ref('');
 
 const handleSubmit = async () => {
-    const success = await auth.login(email.value, password.value);
-    if (success) {
+    try {
+        await auth.login({ email: email.value, password: password.value });
         toast.add({ severity: 'success', summary: 'Success', detail: 'Logged in successfully', life: 3000 });
         router.push('/boards');
-    } else {
+    } catch (error) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Invalid credentials', life: 3000 });
     }
 };

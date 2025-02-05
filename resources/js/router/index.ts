@@ -1,22 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/authStore'
+import useAuth from '../stores/authStore'
 import HomeView from '../views/HomeView.vue'
 import BoardsView from '@/views/BoardsView.vue'
 import BoardDetailsView from '@/views/BoardDetailsView.vue'
+import LoginView from '@/views/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: '/login',
-      name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      path: '/',
+      name: 'home',
+      component: HomeView,
       meta: { requiresAuth: false }
     },
     {
-      path: '/',
-      name: 'home',
-      component: () => import('../views/HomeView.vue'),
+      path: '/login',
+      name: 'login',
+      component: LoginView,
       meta: { requiresAuth: false }
     },
     {
@@ -34,13 +35,17 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  const auth = useAuthStore()
+router.beforeEach(async (to, from, next) => {
+  const auth = useAuth()
+  const authenticated = auth.authenticated.value
 
-  // Check if route requires auth and user is not authenticated
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+
+  if (to.meta.requiresAuth && !authenticated) {
     next('/login')
-  } else if (to.path === '/login' && auth.isAuthenticated) {
+    return
+  }
+
+  if (to.path === '/login' && authenticated) {
     next('/')
   } else {
     next()

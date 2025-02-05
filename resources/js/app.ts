@@ -4,7 +4,8 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
-import { useAuthStore } from './stores/authStore'
+import useAuth from './stores/authStore'
+
 import axios from 'axios'
 
 // Layout imports
@@ -61,13 +62,12 @@ app.component('Dropdown', Dropdown)
 app.component('Toast', Toast)
 app.component('Password', Password)
 
-const authStore = useAuthStore()
-// Check auth status on app start
-authStore.checkAuth()
-
 // Set axios defaults
 axios.defaults.baseURL = '/api'
 axios.defaults.withCredentials = true; // Enable cookies
 
-// Mount app
-app.mount('#app') 
+// Check authentication state before mounting
+const auth = useAuth()
+auth.attempt().then(() => {
+    app.mount('#app')
+}) 

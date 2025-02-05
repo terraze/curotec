@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { useAuthStore } from '../stores/authStore';
+import useAuth from '../stores/authStore';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 
-const auth = useAuthStore();
+const auth = useAuth();
 const router = useRouter();
 const toast = useToast();
 
+// Instead of destructuring, use the value property
+const authenticated = auth.authenticated.value;
+
 const handleLogout = async () => {
     await auth.logout();
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Logged out successfully', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Logged out successfully', life: 8000 });    
+};
+
+const handleLogin = () => {
     router.push('/login');
 };
 </script>
@@ -43,13 +49,13 @@ const handleLogout = async () => {
         </div>
         <div>
             <Button 
-                v-if="!auth.isAuthenticated" 
+                v-if="!authenticated" 
                 label="Login" 
-                @click="router.push('/login')"
+                @click="handleLogin"
                 class="p-button-secondary"
             />
             <Button 
-                v-else 
+                v-if="authenticated" 
                 label="Logout" 
                 @click="handleLogout"
                 class="p-button-secondary"

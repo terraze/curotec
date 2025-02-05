@@ -12,11 +12,11 @@ Route::get('/health', [HealthController::class, 'check']);
 
 // Public endpoints
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // All API routes require authentication
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/logout', [AuthController::class, 'logout']);
     
     // Boards API
     Route::prefix('boards')->group(function () {

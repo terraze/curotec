@@ -4,6 +4,7 @@ import { useBoardsStore } from '@/stores/boardsStore'
 import { formatDate } from '@/utils/dateFormatter'
 import { useConfirm } from "primevue/useconfirm"
 import CreateBoardDialog from '@/components/CreateBoardDialog.vue'
+import { useUserStore } from '@/stores/userStore'
 
 defineOptions({
     name: 'BoardsView'
@@ -12,9 +13,11 @@ defineOptions({
 const boardsStore = useBoardsStore()
 const showCreateDialog = ref(false)
 const confirm = useConfirm()
+const userStore = useUserStore()
 
-onMounted(() => {
-    boardsStore.fetchBoards()
+onMounted(async () => {
+    await boardsStore.fetchBoards()
+    await userStore.fetchUsers()
 })
 
 const deleteBoard = async (boardId: number) => {
