@@ -11,7 +11,6 @@ use Illuminate\Http\Response;
 use App\Models\BoardTaskStatus;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
-use Illuminate\Support\Facades\Log;
 use App\Events\TaskUpdated;
 use App\Events\TaskCreated;
 use App\Events\TaskDeleted;
@@ -144,7 +143,6 @@ class TaskController extends Controller
                 'task_status_id' => $validated['task_status_id']
             ]);
             event(new TaskUpdated($task));
-            Log::info('TaskUpdated event dispatched from status update', ['task_id' => $task->id]);
 
             return response()->json([
                 'status' => 'success',
@@ -174,7 +172,6 @@ class TaskController extends Controller
                 'assignee_id' => $validated['assignee_id'] ?? null
             ]);
             event(new TaskUpdated($task));
-            Log::info('TaskUpdated event dispatched', ['task_id' => $task->id]);
 
             return response()->json([
                 'status' => 'success',
@@ -193,7 +190,6 @@ class TaskController extends Controller
     public function update(UpdateTaskRequest $request, Task $task)
     {
         $task->update($request->validated());
-        Log::info('Task updated', ['task' => $task->id]);
         
         return new TaskResource($task);
     }
