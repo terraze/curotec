@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\TaskStatus;
+use App\Models\BoardTaskStatus;
+use App\Models\Task;
 
 class Board extends Model
 {
@@ -24,12 +26,12 @@ class Board extends Model
         static::created(function ($board) {
             // We don't have a system to manage task statuses, so we'll just get all task statuses ordered by id
             $taskStatuses = TaskStatus::orderBy('id')->get();
-            
+
             // Create an array with task_status_id => sort_order pairs
             $taskStatusesWithOrder = $taskStatuses->mapWithKeys(function ($status, $index) {
                 return [$status->id => ['sort_order' => $index + 1]];
             })->toArray();
-            
+
             // Attach all task statuses to the new board with sort_order
             $board->taskStatuses()->attach($taskStatusesWithOrder);
         });
