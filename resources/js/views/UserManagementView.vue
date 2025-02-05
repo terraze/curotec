@@ -5,9 +5,48 @@ import useAuth from '@/stores/authStore'
 import axios from 'axios'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import ToggleSwitch  from 'primevue/toggleswitch'
+import { useToast } from 'primevue/usetoast'
 
 const users = ref<User[]>([])
 const authStore = useAuth()
+const toast = useToast()
+
+const toggleAdminRole = async (user: User) => {
+  if (user.id === authStore.user.value?.id) {
+    return // Prevent self-toggle
+  }
+
+  try {
+    const isAdmin = user.roles.includes('admin')
+    const endpoint = isAdmin ? `/users/${user.id}/remove-admin` : `/users/${user.id}/assign-admin`
+    await axios.post(endpoint)
+    
+    // Update local state
+    const updatedUser = { ...user }
+    if (isAdmin) {
+      updatedUser.roles = updatedUser.roles.filter(role => role !== 'admin')
+    } else {
+      updatedUser.roles = [...updatedUser.roles, 'admin']
+    }
+    users.value = users.value.map(u => u.id === user.id ? updatedUser : u)
+
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: `Admin role ${isAdmin ? 'removed from' : 'assigned to'} ${user.name}`,
+      life: 3000
+    })
+  } catch (error) {
+    console.error('Failed to toggle admin role:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to update admin role',
+      life: 3000
+    })
+  }
+}
 
 onMounted(async () => {
   try {
@@ -27,9 +66,13 @@ onMounted(async () => {
       <Column field="id" header="ID" sortable></Column>
       <Column field="name" header="Name" sortable></Column>
       <Column field="email" header="Email" sortable></Column>
-      <Column header="Admin" sortable>
-        <template #body="slotProps">
-          {{ slotProps.data.roles.includes('admin') ? 'Yes' : 'No' }}
+      <Column header="Admin" sortable :sortField="(item) => item.roles.includes('admin')">
+        <template #body="{ data }">
+          <ToggleSwitch  
+            :modelValue="data.roles.includes('admin')"
+            @update:modelValue="() => toggleAdminRole(data)"
+            :disabled="data.id === authStore.user.value?.id"
+          />
         </template>
       </Column>
     </DataTable>
