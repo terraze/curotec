@@ -55,19 +55,42 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       }
     },
 
-    async updateTaskStatus(taskId: number, newStatusId: number) {
+    async updateTaskStatus(taskId: number, newStatusId: number, toast: any) {
       try {
-        await axios.put(`/api/tasks/${taskId}/status`, {
-          task_status_id: newStatusId
+        const task = this.board?.tasks.find(t => t.id === taskId);
+        if (!task) throw new Error('Task not found');
+
+        const response = await axios.put(`/api/tasks/${taskId}/status`, {
+          task_status_id: newStatusId,
+          updated_at: task.updated_at
         })
 
-        // Update the local state
-        const taskIndex = this.board?.tasks.findIndex(t => t.id === taskId)
-        if (taskIndex !== undefined && taskIndex !== -1 && this.board) {
-          this.board.tasks[taskIndex].task_status_id = newStatusId
+        // Update local state with the new data from server
+        if (this.board) {
+          const taskIndex = this.board.tasks.findIndex(t => t.id === taskId);
+          if (taskIndex !== -1) {
+            this.board.tasks[taskIndex] = response.data.data;
+          }
         }
-      } catch (error) {
-        throw error
+
+      } catch (error: any) {
+        if (error.response?.data?.code === 'STALE_OBJECT') {
+          toast.add({
+            severity: 'warn',
+            summary: 'Update Conflict',
+            detail: 'This task has been modified by another user.',
+            life: 10000
+          });
+
+          // Update local state with server data
+          if (this.board) {
+            const taskIndex = this.board.tasks.findIndex(t => t.id === error.response.data.data.id);
+            if (taskIndex !== -1) {
+              this.board.tasks[taskIndex] = error.response.data.data;
+            }
+          }
+        }
+        throw error;
       }
     },
 

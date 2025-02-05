@@ -8,6 +8,7 @@ import type { Task } from '@/types/boardDetails'
 import { useLoadingStore } from '@/stores/loadingStore'
 import TaskCard from '@/components/TaskCard.vue'
 import CreateTaskDialog from '@/components/CreateTaskDialog.vue'
+import { useToast } from 'primevue/usetoast'
 
 defineOptions({
     name: 'BoardDetailsView'
@@ -16,6 +17,7 @@ defineOptions({
 const route = useRoute()
 const boardDetailsStore = useBoardDetailsStore()
 const { board, loading, error } = storeToRefs(boardDetailsStore)
+const toast = useToast()
 
 // Sort task status by sort_order
 const sortedTaskStatus = computed(() => {
@@ -59,9 +61,9 @@ const handleDrop = async (event: DragEvent, newStatusId: number) => {
     loadingStore.startLoading()
     
     try {
-        await boardDetailsStore.updateTaskStatus(parseInt(taskId, 10), newStatusId)
+        await boardDetailsStore.updateTaskStatus(parseInt(taskId, 10), newStatusId, toast)
     } catch (error) {
-        console.error('Failed to update task status:', error)
+        console.log('Failed to update task status:', error)
     } finally {
         loadingStore.stopLoading()
     }

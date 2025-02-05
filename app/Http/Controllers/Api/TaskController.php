@@ -132,9 +132,20 @@ class TaskController extends Controller
         try {
             $validated = $request->validate([
                 'task_status_id' => 'required|integer|exists:task_statuses,id',
+                'updated_at' => 'required|date'
             ]);
 
-            // Check if this status is valid for this board by looking up the board_task_status record
+            // Check if the task has been modified since the client last saw it
+            if ($task->updated_at->ne($validated['updated_at'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task has been modified by another user',
+                    'code' => 'STALE_OBJECT',
+                    'data' => $task->fresh()
+                ], Response::HTTP_CONFLICT);
+            }
+
+            // Check if this status is valid for this board
             BoardTaskStatus::where('task_status_id', $validated['task_status_id'])
                 ->where('board_id', $task->board_id)
                 ->firstOrFail();
@@ -149,7 +160,6 @@ class TaskController extends Controller
                 'message' => 'Task status updated successfully',
                 'data' => $task->fresh()
             ]);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

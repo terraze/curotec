@@ -13,6 +13,8 @@ class Task extends Model
 {
     use HasFactory, InteractsWithSockets;
 
+    public $timestamps = true;
+
     protected $fillable = [
         'title',
         'description',
@@ -90,8 +92,7 @@ class Task extends Model
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
-            'position' => $this->position,
-            // Add other fields you want to broadcast
+            'updated_at' => $this->updated_at,
         ];
     }
 } 
