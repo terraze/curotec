@@ -4,6 +4,9 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import useAuth from './stores/authStore'
+
+import axios from 'axios'
 
 // Layout imports
 import PrimeVue from 'primevue/config'
@@ -23,6 +26,7 @@ import Dropdown from 'primevue/dropdown'
 import '@mdi/font/css/materialdesignicons.css'
 import ToastService from 'primevue/toastservice'
 import Toast from 'primevue/toast'
+import Password from 'primevue/password'
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -56,6 +60,29 @@ app.component('InputText', InputText)
 app.component('Textarea', Textarea)
 app.component('Dropdown', Dropdown)
 app.component('Toast', Toast)
+app.component('Password', Password)
 
-// Mount app
-app.mount('#app') 
+// Set axios defaults
+axios.defaults.baseURL = '/api'
+axios.defaults.withCredentials = true; // Enable cookies
+
+// Check authentication state before mounting
+const auth = useAuth()
+auth.attempt()
+    .then((response) => {
+        // Only mount if we got a response (successful auth check)
+        if (response) {
+            app.mount('#app')
+        } else {
+            // If auth check failed, still mount but ensure we're logged out
+            auth.setAuthenticated(false)
+            auth.setUser({})
+            app.mount('#app')
+        }
+    })
+    .catch(() => {
+        // If there's an error, mount anyway but ensure we're logged out
+        auth.setAuthenticated(false)
+        auth.setUser({})
+        app.mount('#app')
+    }) 

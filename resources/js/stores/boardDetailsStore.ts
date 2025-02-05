@@ -4,11 +4,7 @@ import { ApiError } from '@/types/errors/ApiError'
 import { Task } from '@/types/boardDetails'
 import type { BoardDetails } from '@/types/boardDetails'
 import { useLoadingStore } from '@/stores/loadingStore'
-
-interface ApiResponse {
-  status: string
-  data: BoardDetails
-}
+import type { ApiResponse } from '@/types/api'
 
 interface BoardDetailsState {
   board: BoardDetails | null
@@ -88,9 +84,9 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       loadingStore.startLoading()
 
       try {
-        const response = await axios.get<ApiResponse>(`/api/boards/${boardId}`)
-        if (response.data.status !== ApiError.SUCCESS_STATUS) {
-          throw new ApiError(response.data.status)
+        const response = await axios.get<ApiResponse<BoardDetails>>(`/boards/${boardId}`)
+        if (response.data.status !== "success") {
+          throw new ApiError('Failed to load board')
         }
 
         this.board = response.data.data
@@ -112,7 +108,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       if (!task) throw new Error('Task not found');
 
       await handleOptimisticUpdate(
-        () => axios.put(`/api/tasks/${taskId}/status`, {
+        () => axios.put(`/tasks/${taskId}/status`, {
           task_status_id: newStatusId
         }),
         taskId,
@@ -132,7 +128,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       loadingStore.startLoading()
 
       try {
-        const response = await axios.post('/api/tasks', taskData)
+        const response = await axios.post('/tasks', taskData)
 
         if (response.data.status !== ApiError.SUCCESS_STATUS) {
           throw new ApiError(response.data.status)
@@ -158,7 +154,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       loadingStore.startLoading()
 
       try {
-        const response = await axios.delete<{ status: string }>(`/api/tasks/${taskId}`)
+        const response = await axios.delete<{ status: string }>(`/tasks/${taskId}`)
 
         // Remove the task from the local state
         if (this.board) {
@@ -182,7 +178,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       if (!task) throw new Error('Task not found');
 
       await handleOptimisticUpdate(
-        () => axios.put(`/api/tasks/${taskId}/assignee`, {
+        () => axios.put(`/tasks/${taskId}/assignee`, {
           assignee_id: assigneeId
         }),
         taskId,

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useBoardsStore } from '@/stores/boardsStore'
 import { formatDate } from '@/utils/dateFormatter'
 import { useConfirm } from "primevue/useconfirm"
 import CreateBoardDialog from '@/components/CreateBoardDialog.vue'
+import { useUserStore } from '@/stores/userStore'
+import useAuth from '@/stores/authStore'
 
 defineOptions({
     name: 'BoardsView'
@@ -12,9 +14,13 @@ defineOptions({
 const boardsStore = useBoardsStore()
 const showCreateDialog = ref(false)
 const confirm = useConfirm()
+const userStore = useUserStore()
+const auth = useAuth()
+const isAdmin = computed(() => auth.user.value?.roles?.includes('admin'))
 
-onMounted(() => {
-    boardsStore.fetchBoards()
+onMounted(async () => {
+    await boardsStore.fetchBoards()
+    await userStore.fetchUsers()
 })
 
 const deleteBoard = async (boardId: number) => {
@@ -40,7 +46,12 @@ const deleteBoard = async (boardId: number) => {
         </div>
 
         <div v-else class="w-2/3 mx-auto">
-            <Button label="+ New Board" severity="info" class="ml-2 mb-4" @click="showCreateDialog = true"></Button>
+            <Button 
+                v-if="isAdmin"
+                label="New Board" 
+                @click="showCreateDialog = true"
+                class="p-button-success mb-4"
+            />
             
             <CreateBoardDialog v-model="showCreateDialog" />
 
@@ -67,7 +78,13 @@ const deleteBoard = async (boardId: number) => {
                         >
                             <Button label="Go to Board"></Button>
                         </router-link>
-                        <Button label="DELETE" severity="danger" class="ml-2" @click="deleteBoard(data.id)"></Button>
+                        <Button 
+                            v-if="isAdmin"
+                            label="Delete"
+                            icon="pi pi-trash" 
+                            @click="deleteBoard(data.id)"
+                            class="p-button-danger ml-2"
+                        ></Button>
                     </template>
                 </Column>
             </DataTable>      

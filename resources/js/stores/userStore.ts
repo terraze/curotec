@@ -16,7 +16,7 @@ export const useUserStore = defineStore('user', {
   actions: {
     async fetchUsers() {
       try {
-        const response = await axios.get<{data: User[]}>('/api/users');
+        const response = await axios.get<{ data: User[] }>('/users');
         this.users = response.data.data;
         this.loaded = true;
       } catch (error) {
@@ -26,7 +26,7 @@ export const useUserStore = defineStore('user', {
 
     async updateTaskAssignee(taskId: number, assigneeId: number | null) {
       try {
-        await axios.put(`/api/tasks/${taskId}/assignee`, {
+        await axios.put(`/tasks/${taskId}/assignee`, {
           assignee_id: assigneeId
         });
       } catch (error) {

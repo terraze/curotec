@@ -11,10 +11,15 @@ class UserController extends Controller
 {
     public function index(): JsonResponse
     {
-        $users = User::select(['id', 'name', 'email', 'created_at', 'updated_at'])
-            ->orderBy('name')
-            ->get();
-            
+        $users = User::all()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->getRoleNames()
+            ];
+        });
+
         return response()->json([
             'success' => true,
             'data' => $users

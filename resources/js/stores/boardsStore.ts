@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { ApiError } from '@/types/errors/ApiError'
 import { useLoadingStore } from '@/stores/loadingStore'
+import type { ApiResponse } from '@/types/api'
 
 interface Board {
   id: number
@@ -12,11 +13,6 @@ interface Board {
   updated_at: string
 }
 
-interface ApiResponse {
-  status: string
-  data: Board[]
-}
-
 interface BoardsState {
   boards: Board[]
   loading: boolean
@@ -24,8 +20,8 @@ interface BoardsState {
 }
 
 interface NewBoard {
-    name: string
-    description: string
+  name: string
+  description: string
 }
 
 export const useBoardsStore = defineStore('boards', {
@@ -39,20 +35,20 @@ export const useBoardsStore = defineStore('boards', {
     async fetchBoards() {
       const loadingStore = useLoadingStore()
       loadingStore.startLoading()
-      
+
       try {
-        const response = await axios.get<ApiResponse>('/api/boards')
-        if(response.data.status !== ApiError.SUCCESS_STATUS){
-            throw new ApiError(response.data.status)
+        const response = await axios.get<ApiResponse<Board[]>>('/boards')
+        if (response.data.status !== "success") {
+          throw new ApiError('Failed to fetch boards')
         }
 
         this.boards = response.data.data
-        
+
       } catch (err) {
         if (err instanceof ApiError) {
-            this.error = err.message
+          this.error = err.message
         } else {
-            this.error = 'Failed to fetch boards'
+          this.error = 'Failed to fetch boards'
         }
         console.error('Error fetching boards:', err)
       } finally {
@@ -63,9 +59,9 @@ export const useBoardsStore = defineStore('boards', {
     async deleteBoard(boardId: number) {
       const loadingStore = useLoadingStore()
       loadingStore.startLoading()
-      
+
       try {
-        await axios.delete(`/api/boards/${boardId}`)
+        await axios.delete(`/boards/${boardId}`)
         // Remove the board from the local state
         this.boards = this.boards.filter(board => board.id !== boardId)
       } catch (error) {
@@ -79,12 +75,12 @@ export const useBoardsStore = defineStore('boards', {
     async createBoard(boardData: NewBoard) {
       const loadingStore = useLoadingStore()
       loadingStore.startLoading()
-        
+
       try {
-        const response = await axios.post<{status: string, data: Board}>('/api/boards', boardData)
-        
-        if(response.data.status !== ApiError.SUCCESS_STATUS){
-            throw new ApiError(response.data.status)
+        const response = await axios.post<{ status: string, data: Board }>('/boards', boardData)
+
+        if (response.data.status !== ApiError.SUCCESS_STATUS) {
+          throw new ApiError(response.data.status)
         }
 
         // Add the new board to the local state
@@ -92,9 +88,9 @@ export const useBoardsStore = defineStore('boards', {
         return response.data.data
       } catch (error) {
         if (error instanceof ApiError) {
-            this.error = error.message
+          this.error = error.message
         } else {
-            this.error = 'Failed to create board'
+          this.error = 'Failed to create board'
         }
         console.error('Error creating board:', error)
         throw error
