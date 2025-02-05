@@ -23,6 +23,42 @@ interface NewTask {
   board_id: number
 }
 
+// Reusable function to handle concurrent updates with a optimistic lock based on updated_at
+const handleOptimisticUpdate = async (
+  operation: () => Promise<any>,
+  taskId: number,
+  board: BoardDetails | null,
+  toast: any
+) => {
+  try {
+    const response = await operation();
+    // Update local state with the new data from server
+    if (board) {
+      const taskIndex = board.tasks.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1) {
+        board.tasks[taskIndex] = response.data.data;
+      }
+    }
+  } catch (error: any) {
+    if (error.response?.data?.code === 'STALE_OBJECT') {
+      toast.add({
+        severity: 'warn',
+        summary: 'Update Conflict',
+        detail: 'This task has been modified by another user.',
+        life: 10000
+      });
+      // Update local state with server data
+      if (board) {
+        const taskIndex = board.tasks.findIndex(t => t.id === error.response.data.data.id);
+        if (taskIndex !== -1) {
+          board.tasks[taskIndex] = error.response.data.data;
+        }
+      }
+    }
+    throw error;
+  }
+};
+
 export const useBoardDetailsStore = defineStore('boardDetails', {
   state: (): BoardDetailsState => ({
     board: null,
@@ -56,42 +92,18 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
     },
 
     async updateTaskStatus(taskId: number, newStatusId: number, toast: any) {
-      try {
-        const task = this.board?.tasks.find(t => t.id === taskId);
-        if (!task) throw new Error('Task not found');
+      const task = this.board?.tasks.find(t => t.id === taskId);
+      if (!task) throw new Error('Task not found');
 
-        const response = await axios.put(`/api/tasks/${taskId}/status`, {
+      await handleOptimisticUpdate(
+        () => axios.put(`/api/tasks/${taskId}/status`, {
           task_status_id: newStatusId,
           updated_at: task.updated_at
-        })
-
-        // Update local state with the new data from server
-        if (this.board) {
-          const taskIndex = this.board.tasks.findIndex(t => t.id === taskId);
-          if (taskIndex !== -1) {
-            this.board.tasks[taskIndex] = response.data.data;
-          }
-        }
-
-      } catch (error: any) {
-        if (error.response?.data?.code === 'STALE_OBJECT') {
-          toast.add({
-            severity: 'warn',
-            summary: 'Update Conflict',
-            detail: 'This task has been modified by another user.',
-            life: 10000
-          });
-
-          // Update local state with server data
-          if (this.board) {
-            const taskIndex = this.board.tasks.findIndex(t => t.id === error.response.data.data.id);
-            if (taskIndex !== -1) {
-              this.board.tasks[taskIndex] = error.response.data.data;
-            }
-          }
-        }
-        throw error;
-      }
+        }),
+        taskId,
+        this.board,
+        toast
+      );
     },
 
     reset() {
@@ -150,18 +162,19 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       }
     },
 
-    async updateTaskAssignee(taskId: number, assigneeId: number | null) {
-      const loadingStore = useLoadingStore()
-      loadingStore.startLoading()
-      try {
-        await axios.put(`/api/tasks/${taskId}/assignee`, { assignee_id: assigneeId });
-        await this.fetchBoardDetails(this.board!.id);
-      } catch (error) {
-        console.error('Failed to update task assignee:', error);
-        throw error;
-      } finally {
-        loadingStore.stopLoading()
-      }
+    async updateAssignee(taskId: number, assigneeId: number | null, toast: any) {
+      const task = this.board?.tasks.find(t => t.id === taskId);
+      if (!task) throw new Error('Task not found');
+
+      await handleOptimisticUpdate(
+        () => axios.put(`/api/tasks/${taskId}/assignee`, {
+          assignee_id: assigneeId,
+          updated_at: task.updated_at
+        }),
+        taskId,
+        this.board,
+        toast
+      );
     }
   }
 }) 

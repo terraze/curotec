@@ -176,7 +176,18 @@ class TaskController extends Controller
         try {
             $validated = $request->validate([
                 'assignee_id' => 'nullable|integer|exists:users,id',
+                'updated_at' => 'required|date'
             ]);
+
+            // Check if the task has been modified since the client last saw it
+            if ($task->updated_at->ne($validated['updated_at'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task has been modified by another user',
+                    'code' => 'STALE_OBJECT',
+                    'data' => $task->fresh()
+                ], Response::HTTP_CONFLICT);
+            }
 
             $task->update([
                 'assignee_id' => $validated['assignee_id'] ?? null

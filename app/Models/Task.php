@@ -92,6 +92,7 @@ class Task extends Model
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
+            'assignee_id' => $this->assignee_id,
             'updated_at' => $this->updated_at,
         ];
     }

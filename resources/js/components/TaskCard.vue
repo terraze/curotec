@@ -5,6 +5,7 @@ import Card from 'primevue/card'
 import Button from 'primevue/button'
 import UserSelect from '@/components/UserSelect.vue'
 import { useConfirm } from "primevue/useconfirm"
+import { useToast } from 'primevue/usetoast'
 
 const props = defineProps<{
     task: Task
@@ -12,6 +13,7 @@ const props = defineProps<{
 
 const boardDetailsStore = useBoardDetailsStore()
 const confirm = useConfirm()
+const toast = useToast()
 
 const deleteTask = async (taskId: number) => {
     confirm.require({
@@ -22,6 +24,14 @@ const deleteTask = async (taskId: number) => {
             await boardDetailsStore.deleteTask(taskId)
         }
     })
+}
+
+const handleAssigneeChange = async (event: any) => {
+    try {
+        await boardDetailsStore.updateAssignee(props.task.id, event, toast)
+    } catch (error) {
+        console.log('Failed to update assignee:', error)
+    }
 }
 </script>
 
@@ -42,7 +52,7 @@ const deleteTask = async (taskId: number) => {
                 v-model="task.assignee_id"
                 placeholder="Select Assignee"
                 class="mt-4 ml-4 w-1/2"
-                @change="(value) => boardDetailsStore.updateTaskAssignee(task.id, value)" />
+                @update:modelValue="handleAssigneeChange" />
             <Button label="DELETE" severity="danger" class="mt-4 ml-4" @click="deleteTask(task.id)"></Button>
         </template>
     </Card>

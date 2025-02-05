@@ -109,7 +109,10 @@ onMounted(async () => {
             })
             .listen('.task.created', (e: any) => {
                 if (board.value) {
-                    board.value.tasks.push(e);
+                    board.value.tasks.push({
+                        ...e,
+                        updated_at: e.updated_at
+                    });
                 }
             })
             .listen('.task.deleted', (e: any) => {
