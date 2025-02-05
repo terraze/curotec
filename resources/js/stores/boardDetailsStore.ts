@@ -4,11 +4,7 @@ import { ApiError } from '@/types/errors/ApiError'
 import { Task } from '@/types/boardDetails'
 import type { BoardDetails } from '@/types/boardDetails'
 import { useLoadingStore } from '@/stores/loadingStore'
-
-interface ApiResponse {
-  status: string
-  data: BoardDetails
-}
+import type { ApiResponse } from '@/types/api'
 
 interface BoardDetailsState {
   board: BoardDetails | null
@@ -88,9 +84,9 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       loadingStore.startLoading()
 
       try {
-        const response = await axios.get<ApiResponse>(`/boards/${boardId}`)
-        if (response.data.status !== ApiError.SUCCESS_STATUS) {
-          throw new ApiError(response.data.status)
+        const response = await axios.get<ApiResponse<BoardDetails>>(`/boards/${boardId}`)
+        if (response.data.status !== "success") {
+          throw new ApiError('Failed to load board')
         }
 
         this.board = response.data.data

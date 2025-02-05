@@ -7,6 +7,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ToggleSwitch  from 'primevue/toggleswitch'
 import { useToast } from 'primevue/usetoast'
+import type { ApiResponse } from '@/types/api'
 
 const users = ref<User[]>([])
 const authStore = useAuth()
@@ -50,10 +51,16 @@ const toggleAdminRole = async (user: User) => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get('/users')
-    users.value = response.data
+    const response = await axios.get<ApiResponse<User[]>>('/users')
+    users.value = response.data.data
   } catch (error) {
     console.error('Failed to fetch users:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load users',
+      life: 3000
+    })
   }
 })
 </script>

@@ -20,7 +20,10 @@ class UserController extends Controller
             ];
         });
 
-        return response()->json($users);
+        return response()->json([
+            'success' => true,
+            'data' => $users
+        ], Response::HTTP_OK);
     }
 
     public function show(int $id): JsonResponse
