@@ -5,15 +5,10 @@ import { useBoardDetailsStore } from '@/stores/boardDetailsStore'
 import { storeToRefs } from 'pinia'
 import { formatDate } from '@/utils/dateFormatter'
 import type { Task } from '@/types/boardDetails'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
-import Message from 'primevue/message'
 import { useLoadingStore } from '@/stores/loadingStore'
 import TaskCard from '@/components/TaskCard.vue'
 import CreateTaskDialog from '@/components/CreateTaskDialog.vue'
-import ConfirmDialog from 'primevue/confirmdialog'
+import { useToast } from 'primevue/usetoast'
 
 defineOptions({
     name: 'BoardDetailsView'
@@ -22,6 +17,7 @@ defineOptions({
 const route = useRoute()
 const boardDetailsStore = useBoardDetailsStore()
 const { board, loading, error } = storeToRefs(boardDetailsStore)
+const toast = useToast()
 
 // Sort task status by sort_order
 const sortedTaskStatus = computed(() => {
@@ -65,9 +61,9 @@ const handleDrop = async (event: DragEvent, newStatusId: number) => {
     loadingStore.startLoading()
     
     try {
-        await boardDetailsStore.updateTaskStatus(parseInt(taskId, 10), newStatusId)
+        await boardDetailsStore.updateTaskStatus(parseInt(taskId, 10), newStatusId, toast)
     } catch (error) {
-        console.error('Failed to update task status:', error)
+        console.log('Failed to update task status:', error)
     } finally {
         loadingStore.stopLoading()
     }
@@ -95,11 +91,42 @@ onMounted(async () => {
     const boardId = parseInt(route.params.id as string)
     if (!isNaN(boardId)) {
         await boardDetailsStore.fetchBoardDetails(boardId)
+
+        window.Echo.channel(`board.${boardId}`)
+            .subscribed(() => {
+            })
+            .error((error: any) => {
+                console.error('Channel subscription error:', error);
+            })
+            .listen('.task.updated', (e: any) => {
+                const taskIndex = board.value?.tasks.findIndex(task => task.id === e.id);
+                if (taskIndex !== undefined && taskIndex !== -1 && board.value) {
+                    board.value.tasks[taskIndex] = {
+                        ...board.value.tasks[taskIndex],
+                        ...e
+                    };
+                }
+            })
+            .listen('.task.created', (e: any) => {
+                if (board.value) {
+                    board.value.tasks.push({
+                        ...e,
+                        updated_at: e.updated_at
+                    });
+                }
+            })
+            .listen('.task.deleted', (e: any) => {
+                if (board.value) {
+                    board.value.tasks = board.value.tasks.filter(task => task.id !== e.id);
+                }
+            });
     }
 })
 
 onUnmounted(() => {
     boardDetailsStore.reset()
+    // Disconnect from websocket
+    window.Echo.leave(`board.${parseInt(route.params.id as string)}`);
 })
 </script>
 

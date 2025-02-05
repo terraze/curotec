@@ -3,11 +3,6 @@ import { onMounted, ref } from 'vue'
 import { useBoardsStore } from '@/stores/boardsStore'
 import { formatDate } from '@/utils/dateFormatter'
 import { useConfirm } from "primevue/useconfirm"
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Button from 'primevue/button'
-import Message from 'primevue/message'
-import ConfirmDialog from 'primevue/confirmdialog'
 import CreateBoardDialog from '@/components/CreateBoardDialog.vue'
 
 defineOptions({

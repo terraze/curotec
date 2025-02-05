@@ -1,3 +1,4 @@
+import './bootstrap';
 // Basic imports
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -20,21 +21,27 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Dropdown from 'primevue/dropdown'
 import '@mdi/font/css/materialdesignicons.css'
+import ToastService from 'primevue/toastservice'
+import Toast from 'primevue/toast'
 
 const pinia = createPinia()
 const app = createApp(App)
 
-// Use Pinia before any store might be accessed
-app.use(pinia)
-
-// Then other plugins
-app.use(router)
+// Initialize PrimeVue and its services first
 app.use(PrimeVue, {
     unstyled: false,
     theme: {
         preset: Lara
     }
 })
+app.use(ToastService)
+app.use(ConfirmationService)
+
+// Use Pinia before any store might be accessed
+app.use(pinia)
+
+// Then other plugins
+app.use(router)
 
 // PrimeVue components
 app.component('Card', Card)
@@ -48,8 +55,7 @@ app.component('Dialog', Dialog)
 app.component('InputText', InputText)
 app.component('Textarea', Textarea)
 app.component('Dropdown', Dropdown)
-// PrimeVue services
-app.use(ConfirmationService)
+app.component('Toast', Toast)
 
 // Mount app
 app.mount('#app') 

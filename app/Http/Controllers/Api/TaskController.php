@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\BoardTaskStatus;
+use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskResource;
+use App\Events\TaskUpdated;
+use App\Events\TaskCreated;
+use App\Events\TaskDeleted;
+use Illuminate\Support\Facades\DB;
+
 
 class TaskController extends Controller
 {
@@ -70,6 +77,8 @@ class TaskController extends Controller
             'created_at' => now(),
         ]);
 
+        event(new TaskCreated($task));
+
         return response()->json([
             'status' => 'success',
             'message' => 'Task created successfully',
@@ -84,7 +93,11 @@ class TaskController extends Controller
     {
         try {
             $task = Task::findOrFail($id);
+            $boardId = $task->board_id;
+            $taskId = $task->id;
             $task->delete();
+
+            event(new TaskDeleted($taskId, $boardId));
 
             return response()->json([
                 'status' => 'success',
@@ -118,25 +131,49 @@ class TaskController extends Controller
     public function updateStatus(Request $request, Task $task): JsonResponse
     {
         try {
+            // Check if task exists
+            if (!$task->exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+
             $validated = $request->validate([
-                'task_status_id' => 'required|integer|exists:board_task_status,id',
+                'task_status_id' => 'required|integer|exists:task_statuses,id'
             ]);
 
-            // Verify that the new status belongs to the same board as the task
-            $boardTaskStatus = BoardTaskStatus::where('id', $validated['task_status_id'])
-                ->where('board_id', $task->board_id)
-                ->firstOrFail();
+            // Use database transaction for atomic operation
+            $updated = DB::transaction(function() use ($task, $validated) {
+                // Attempt to update only if updated_at hasn't changed
+                $affected = DB::table('tasks')
+                    ->where('id', $task->id)
+                    ->where('updated_at', $task->updated_at)
+                    ->update([
+                        'task_status_id' => $validated['task_status_id'],
+                        'updated_at' => now()
+                    ]);
+                
+                return $affected > 0;
+            });
+            
+            if (!$updated) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task has been modified by another user',
+                    'code' => 'STALE_OBJECT',
+                    'data' => $task->fresh()
+                ], Response::HTTP_CONFLICT);
+            }
 
-            $task->update([
-                'task_status_id' => $validated['task_status_id']
-            ]);
+            $task = $task->fresh();
+            event(new TaskUpdated($task));
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Task status updated successfully',
-                'data' => $task->fresh()
+                'data' => $task
             ]);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -151,18 +188,48 @@ class TaskController extends Controller
     public function updateAssignee(Request $request, Task $task): JsonResponse
     {
         try {
+            // Check if task exists
+            if (!$task->exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+
             $validated = $request->validate([
-                'assignee_id' => 'nullable|integer|exists:users,id',
+                'assignee_id' => 'nullable|integer|exists:users,id'
             ]);
 
-            $task->update([
-                'assignee_id' => $validated['assignee_id'] ?? null
-            ]);
+            // Use database transaction for atomic operation
+            $updated = DB::transaction(function() use ($task, $validated) {
+                // Attempt to update only if updated_at hasn't changed
+                $affected = DB::table('tasks')
+                    ->where('id', $task->id)
+                    ->where('updated_at', $task->updated_at)
+                    ->update([
+                        'assignee_id' => $validated['assignee_id'] ?? null,
+                        'updated_at' => now()
+                    ]);
+                
+                return $affected > 0;
+            });
+            
+            if (!$updated) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task has been modified by another user',
+                    'code' => 'STALE_OBJECT',
+                    'data' => $task->fresh()
+                ], Response::HTTP_CONFLICT);
+            }
+
+            $task = $task->fresh();
+            event(new TaskUpdated($task));
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Task assignee updated successfully',
-                'data' => $task->fresh()->load('assignee')
+                'data' => $task->load('assignee')
             ]);
 
         } catch (ModelNotFoundException $e) {
@@ -171,5 +238,12 @@ class TaskController extends Controller
                 'message' => 'Invalid user',
             ], Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    public function update(UpdateTaskRequest $request, Task $task)
+    {
+        $task->update($request->validated());
+        
+        return new TaskResource($task);
     }
 }

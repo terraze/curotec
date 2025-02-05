@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+if [ ! -z "$WWWUSER" ]; then
+    usermod -u $WWWUSER sail
+fi
+
+if [ ! -d /.composer ]; then
+    mkdir /.composer
+fi
+
+chmod -R ugo+rw /.composer
+
+# Start supervisor
+/usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+
+php artisan migrate
+php artisan storage:link
+
+if [ $# -gt 0 ]; then
+    exec gosu $WWWUSER "$@"
+else
+    exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf 
