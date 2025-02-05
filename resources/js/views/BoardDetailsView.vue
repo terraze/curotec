@@ -95,6 +95,19 @@ onMounted(async () => {
     const boardId = parseInt(route.params.id as string)
     if (!isNaN(boardId)) {
         await boardDetailsStore.fetchBoardDetails(boardId)
+        console.log('Attempting to connect to WebSocket...');
+        
+        window.Echo.connector.pusher.connection.bind('state_change', (states: any) => {
+            console.log('Connection states:', states);
+        });
+        
+        window.Echo.channel('tasks')
+            .listen('TaskUpdated', (e: any) => {
+                console.log('Received task update:', e);
+            })
+            .error((error: any) => {
+                console.error('Channel error:', error);
+            });
     }
 })
 

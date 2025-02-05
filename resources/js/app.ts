@@ -1,3 +1,4 @@
+import './bootstrap';
 // Basic imports
 import { createApp } from 'vue'
 import App from './App.vue'

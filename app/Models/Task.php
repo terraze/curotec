@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\TaskUpdated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -33,6 +34,10 @@ class Task extends Model
             }
         });
     }
+
+    protected $dispatchesEvents = [
+        'updated' => TaskUpdated::class,
+    ];
 
     public function status(): BelongsTo
     {

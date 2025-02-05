@@ -9,14 +9,7 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
         }),
-        vue({
-            template: {
-                transformAssetUrls: {
-                    base: null,
-                    includeAbsolute: false,
-                },
-            },
-        }),
+        vue(),
     ],
     resolve: {
         alias: {
@@ -25,10 +18,14 @@ export default defineConfig({
     },
     server: {
         hmr: {
-            host: '127.0.0.1'
+            host: 'localhost'
         },
-        watch: {
-            usePolling: true
+        host: '0.0.0.0',
+        port: 5173,
+        cors: true,
+        origin: 'http://localhost:5173',
+        headers: {
+            'Access-Control-Allow-Origin': '*'
         }
     },
 }); 
