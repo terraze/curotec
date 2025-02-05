@@ -40,6 +40,22 @@ const handleOptimisticUpdate = async (
       }
     }
   } catch (error: any) {
+    // Handle 404 Not Found (task was deleted)
+    if (error.response?.status === 404) {
+      toast.add({
+        severity: 'error',
+        summary: 'Task Not Found',
+        detail: 'This task has been deleted by another user.',
+        life: 10000
+      });
+      // Remove the task from local state
+      if (board?.tasks) {
+        board.tasks = board.tasks?.filter(t => t?.id !== taskId);
+      }
+      return;
+    }
+
+    // Handle concurrent modification
     if (error.response?.data?.code === 'STALE_OBJECT') {
       toast.add({
         severity: 'warn',
@@ -97,8 +113,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
 
       await handleOptimisticUpdate(
         () => axios.put(`/api/tasks/${taskId}/status`, {
-          task_status_id: newStatusId,
-          updated_at: task.updated_at
+          task_status_id: newStatusId
         }),
         taskId,
         this.board,
@@ -168,8 +183,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
 
       await handleOptimisticUpdate(
         () => axios.put(`/api/tasks/${taskId}/assignee`, {
-          assignee_id: assigneeId,
-          updated_at: task.updated_at
+          assignee_id: assigneeId
         }),
         taskId,
         this.board,
