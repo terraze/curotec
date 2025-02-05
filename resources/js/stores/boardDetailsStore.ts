@@ -17,10 +17,10 @@ interface BoardDetailsState {
 }
 
 interface NewTask {
-    title: string
-    description: string
-    task_status_id: number
-    board_id: number
+  title: string
+  description: string
+  task_status_id: number
+  board_id: number
 }
 
 export const useBoardDetailsStore = defineStore('boardDetails', {
@@ -34,7 +34,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
     async fetchBoardDetails(boardId: number) {
       const loadingStore = useLoadingStore()
       loadingStore.startLoading()
-      
+
       try {
         const response = await axios.get<ApiResponse>(`/api/boards/${boardId}`)
         if (response.data.status !== ApiError.SUCCESS_STATUS) {
@@ -42,7 +42,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
         }
 
         this.board = response.data.data
-        
+
       } catch (err) {
         if (err instanceof ApiError) {
           this.error = err as Error
@@ -60,7 +60,7 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
         await axios.put(`/api/tasks/${taskId}/status`, {
           task_status_id: newStatusId
         })
-        
+
         // Update the local state
         const taskIndex = this.board?.tasks.findIndex(t => t.id === taskId)
         if (taskIndex !== undefined && taskIndex !== -1 && this.board) {
@@ -77,23 +77,19 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
       this.loading = false
     },
 
-    async createTask(taskData: NewTask) {
+    async createTask(taskData: Partial<Task>): Promise<void> {
       const loadingStore = useLoadingStore()
       loadingStore.startLoading()
-      
+
       try {
-        const response = await axios.post<{status: string, data: Task}>('/api/tasks', taskData)
-        
-        if(response.data.status !== ApiError.SUCCESS_STATUS){
+        const response = await axios.post('/api/tasks', taskData)
+
+        if (response.data.status !== ApiError.SUCCESS_STATUS) {
           throw new ApiError(response.data.status)
         }
 
-        // Add the new task to the local state
-        if (this.board) {
-          this.board.tasks.push(response.data.data)
-        }
-        
-        return response.data.data
+        // We don't need to update the state since we are using websockets to update the task
+
       } catch (error) {
         if (error instanceof ApiError) {
           this.error = new Error(error.message)
@@ -110,9 +106,9 @@ export const useBoardDetailsStore = defineStore('boardDetails', {
     async deleteTask(taskId: number) {
       const loadingStore = useLoadingStore()
       loadingStore.startLoading()
-      
+
       try {
-        const response = await axios.delete<{status: string}>(`/api/tasks/${taskId}`)
+        const response = await axios.delete<{ status: string }>(`/api/tasks/${taskId}`)
 
         // Remove the task from the local state
         if (this.board) {

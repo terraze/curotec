@@ -89,7 +89,6 @@ onMounted(async () => {
     const boardId = parseInt(route.params.id as string)
     if (!isNaN(boardId)) {
         await boardDetailsStore.fetchBoardDetails(boardId)
-        console.log('Subscribing to channel:', `board.${boardId}`);
 
         window.Echo.channel(`board.${boardId}`)
             .subscribed(() => {
@@ -104,6 +103,16 @@ onMounted(async () => {
                         ...board.value.tasks[taskIndex],
                         ...e
                     };
+                }
+            })
+            .listen('.task.created', (e: any) => {
+                if (board.value) {
+                    board.value.tasks.push(e);
+                }
+            })
+            .listen('.task.deleted', (e: any) => {
+                if (board.value) {
+                    board.value.tasks = board.value.tasks.filter(task => task.id !== e.id);
                 }
             });
     }

@@ -13,6 +13,8 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use Illuminate\Support\Facades\Log;
 use App\Events\TaskUpdated;
+use App\Events\TaskCreated;
+use App\Events\TaskDeleted;
 
 
 class TaskController extends Controller
@@ -75,6 +77,8 @@ class TaskController extends Controller
             'created_at' => now(),
         ]);
 
+        event(new TaskCreated($task));
+
         return response()->json([
             'status' => 'success',
             'message' => 'Task created successfully',
@@ -89,7 +93,11 @@ class TaskController extends Controller
     {
         try {
             $task = Task::findOrFail($id);
+            $boardId = $task->board_id;
+            $taskId = $task->id;
             $task->delete();
+
+            event(new TaskDeleted($taskId, $boardId));
 
             return response()->json([
                 'status' => 'success',
