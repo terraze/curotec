@@ -77,6 +77,10 @@ class BoardController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json(['message' => 'Forbidden'], Response::HTTP_FORBIDDEN);
+        }
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -100,6 +104,10 @@ class BoardController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json(['message' => 'Forbidden'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $board = Board::findOrFail($id);
             $board->delete();
@@ -122,6 +130,10 @@ class BoardController extends Controller
      */
     public function destroyAll(): JsonResponse
     {
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json(['message' => 'Forbidden'], Response::HTTP_FORBIDDEN);
+        }
+
         Board::truncate();
 
         return response()->json([

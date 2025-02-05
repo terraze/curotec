@@ -65,7 +65,7 @@ export const useBoardsStore = defineStore('boards', {
       loadingStore.startLoading()
 
       try {
-        await axios.delete(`/api/boards/${boardId}`)
+        await axios.delete(`/boards/${boardId}`)
         // Remove the board from the local state
         this.boards = this.boards.filter(board => board.id !== boardId)
       } catch (error) {
