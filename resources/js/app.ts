@@ -4,6 +4,8 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import { useAuthStore } from './stores/authStore'
+import axios from 'axios'
 
 // Layout imports
 import PrimeVue from 'primevue/config'
@@ -23,6 +25,7 @@ import Dropdown from 'primevue/dropdown'
 import '@mdi/font/css/materialdesignicons.css'
 import ToastService from 'primevue/toastservice'
 import Toast from 'primevue/toast'
+import Password from 'primevue/password'
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -56,6 +59,15 @@ app.component('InputText', InputText)
 app.component('Textarea', Textarea)
 app.component('Dropdown', Dropdown)
 app.component('Toast', Toast)
+app.component('Password', Password)
+
+const authStore = useAuthStore()
+// Check auth status on app start
+authStore.checkAuth()
+
+// Set axios defaults
+axios.defaults.baseURL = '/api'
+axios.defaults.withCredentials = true; // Enable cookies
 
 // Mount app
 app.mount('#app') 

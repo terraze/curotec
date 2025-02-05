@@ -1,5 +1,18 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '../stores/authStore';
+import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
+
+const auth = useAuthStore();
+const router = useRouter();
+const toast = useToast();
+
+const handleLogout = async () => {
+    await auth.logout();
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Logged out successfully', life: 3000 });
+    router.push('/login');
+};
 </script>
 
 <template>
@@ -27,6 +40,20 @@ import { RouterLink } from 'vue-router'
               <span :class="{ 'border-b-2 border-white pb-1': isActive }">Boards</span>
             </RouterLink>
           </div>
+        </div>
+        <div>
+            <Button 
+                v-if="!auth.isAuthenticated" 
+                label="Login" 
+                @click="router.push('/login')"
+                class="p-button-secondary"
+            />
+            <Button 
+                v-else 
+                label="Logout" 
+                @click="handleLogout"
+                class="p-button-secondary"
+            />
         </div>
       </div>
     </div>
