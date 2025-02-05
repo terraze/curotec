@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\BoardTaskStatus;
+use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskResource;
+use Illuminate\Support\Facades\Log;
+use App\Events\TaskUpdated;
+
 
 class TaskController extends Controller
 {
@@ -130,6 +135,8 @@ class TaskController extends Controller
             $task->update([
                 'task_status_id' => $validated['task_status_id']
             ]);
+            event(new TaskUpdated($task));
+            Log::info('TaskUpdated event dispatched from status update', ['task_id' => $task->id]);
 
             return response()->json([
                 'status' => 'success',
@@ -158,6 +165,8 @@ class TaskController extends Controller
             $task->update([
                 'assignee_id' => $validated['assignee_id'] ?? null
             ]);
+            event(new TaskUpdated($task));
+            Log::info('TaskUpdated event dispatched', ['task_id' => $task->id]);
 
             return response()->json([
                 'status' => 'success',
@@ -171,5 +180,13 @@ class TaskController extends Controller
                 'message' => 'Invalid user',
             ], Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    public function update(UpdateTaskRequest $request, Task $task)
+    {
+        $task->update($request->validated());
+        Log::info('Task updated', ['task' => $task->id]);
+        
+        return new TaskResource($task);
     }
 }

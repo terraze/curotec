@@ -89,24 +89,30 @@ onMounted(async () => {
     const boardId = parseInt(route.params.id as string)
     if (!isNaN(boardId)) {
         await boardDetailsStore.fetchBoardDetails(boardId)
-        console.log('Attempting to connect to WebSocket...');
-        
-        window.Echo.connector.pusher.connection.bind('state_change', (states: any) => {
-            console.log('Connection states:', states);
-        });
-        
-        window.Echo.channel('tasks')
-            .listen('TaskUpdated', (e: any) => {
-                console.log('Received task update:', e);
+        console.log('Subscribing to channel:', `board.${boardId}`);
+
+        window.Echo.channel(`board.${boardId}`)
+            .subscribed(() => {
             })
             .error((error: any) => {
-                console.error('Channel error:', error);
+                console.error('Channel subscription error:', error);
+            })
+            .listen('.task.updated', (e: any) => {
+                const taskIndex = board.value?.tasks.findIndex(task => task.id === e.id);
+                if (taskIndex !== undefined && taskIndex !== -1 && board.value) {
+                    board.value.tasks[taskIndex] = {
+                        ...board.value.tasks[taskIndex],
+                        ...e
+                    };
+                }
             });
     }
 })
 
 onUnmounted(() => {
     boardDetailsStore.reset()
+    // Disconnect from websocket
+    window.Echo.leave(`board.${parseInt(route.params.id as string)}`);
 })
 </script>
 

@@ -8,33 +8,33 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class TaskUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $task;
-
-    public function __construct(Task $task)
+    public function __construct(public Task $task)
     {
-        $this->task = $task;
     }
 
     public function broadcastOn(): array
     {
-        return [
-            new Channel('tasks'),
-        ];
+        return [new Channel('board.' . $this->task->board_id)];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'task.updated';
     }
 
     public function broadcastWith(): array
     {
-        Log::info('Broadcasting task update', ['task' => $this->task]);
         return [
             'id' => $this->task->id,
             'title' => $this->task->title,
-            'status' => $this->task->status,
+            'description' => $this->task->description,
+            'task_status_id' => $this->task->task_status_id,
+            'assignee_id' => $this->task->assignee_id,
         ];
     }
 } 
