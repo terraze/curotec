@@ -3,16 +3,23 @@ import { RouterLink } from 'vue-router'
 import useAuth from '../stores/authStore';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
+import { computed, watch, ref, nextTick } from 'vue';
 
 const auth = useAuth();
 const router = useRouter();
 const toast = useToast();
 
-// Instead of destructuring, use the value property
-const authenticated = auth.authenticated.value;
+// Instead of destructuring, use a computed property
+const isAuthenticated = computed(() => auth.authenticated);
+const user = computed(() => auth.user);
+
+const componentKey = ref(0)
 
 const handleLogout = async () => {
     await auth.logout();
+    // Force component re-render
+    componentKey.value++
+    await nextTick()
     toast.add({ severity: 'success', summary: 'Success', detail: 'Logged out successfully', life: 8000 });    
 };
 
@@ -22,7 +29,7 @@ const handleLogin = () => {
 </script>
 
 <template>
-  <nav class="surface-primary shadow">
+  <nav class="surface-primary shadow" :key="componentKey">
     <div class="container mx-auto px-4">
       <div class="flex justify-between h-16">
         <div class="flex">
@@ -47,19 +54,23 @@ const handleLogin = () => {
             </RouterLink>
           </div>
         </div>
-        <div>
+        <div class="ml-10 flex items-center space-x-4">
             <Button 
-                v-if="!authenticated" 
+                v-if="!isAuthenticated.value" 
                 label="Login" 
                 @click="handleLogin"
                 class="p-button-secondary"
             />
-            <Button 
-                v-if="authenticated" 
+            <div v-if="isAuthenticated.value" :key="user.value.id">
+              <Message severity="info">Logged in as {{ user.value.name }}</Message>
+              <Button 
+                v-if="isAuthenticated.value" 
                 label="Logout" 
                 @click="handleLogout"
                 class="p-button-secondary"
             />
+            </div>
+            
         </div>
       </div>
     </div>

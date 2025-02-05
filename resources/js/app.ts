@@ -68,6 +68,21 @@ axios.defaults.withCredentials = true; // Enable cookies
 
 // Check authentication state before mounting
 const auth = useAuth()
-auth.attempt().then(() => {
-    app.mount('#app')
-}) 
+auth.attempt()
+    .then((response) => {
+        // Only mount if we got a response (successful auth check)
+        if (response) {
+            app.mount('#app')
+        } else {
+            // If auth check failed, still mount but ensure we're logged out
+            auth.setAuthenticated(false)
+            auth.setUser({})
+            app.mount('#app')
+        }
+    })
+    .catch(() => {
+        // If there's an error, mount anyway but ensure we're logged out
+        auth.setAuthenticated(false)
+        auth.setUser({})
+        app.mount('#app')
+    }) 

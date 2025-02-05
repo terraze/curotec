@@ -1,10 +1,11 @@
 import { computed, reactive, ref } from 'vue'
 import axios from 'axios'
 import router from '../router'
+import type { User } from '@/types/user'
 
 const state = reactive({
     authenticated: false,
-    user: {}
+    user: {} as User
 })
 
 export default function useAuth() {
@@ -59,8 +60,10 @@ export default function useAuth() {
 
             return response
         } catch (e: any) {
+            // If we get an error, ensure we're logged out
             setAuthenticated(false)
             setUser({})
+            return null
         }
     }
 
@@ -69,6 +72,8 @@ export default function useAuth() {
         user,
         login,
         logout,
+        setAuthenticated,
+        setUser,
         attempt
     }
 }
