@@ -24,6 +24,7 @@ Execute these commands on root of this project:
 
 ```
 composer install
+./vendor/bin/sail build
 ./vendor/bin/sail up -d
 ./vendor/bin/sail artisan migrate
 ./vendor/bin/sail artisan db:seed
