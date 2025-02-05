@@ -132,11 +132,11 @@ class TaskController extends Controller
     {
         try {
             $validated = $request->validate([
-                'task_status_id' => 'required|integer|exists:board_task_status,id',
+                'task_status_id' => 'required|integer|exists:task_statuses,id',
             ]);
 
-            // Verify that the new status belongs to the same board as the task
-            $boardTaskStatus = BoardTaskStatus::where('id', $validated['task_status_id'])
+            // Check if this status is valid for this board by looking up the board_task_status record
+            BoardTaskStatus::where('task_status_id', $validated['task_status_id'])
                 ->where('board_id', $task->board_id)
                 ->firstOrFail();
 
