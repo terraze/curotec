@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { ApiError } from '@/types/errors/ApiError'
 import { useLoadingStore } from '@/stores/loadingStore'
+import type { ApiResponse } from '@/types/api'
 
 interface Board {
   id: number
@@ -10,11 +11,6 @@ interface Board {
   created_by: number
   created_at: string
   updated_at: string
-}
-
-interface ApiResponse {
-  status: string
-  data: Board[]
 }
 
 interface BoardsState {
@@ -41,9 +37,9 @@ export const useBoardsStore = defineStore('boards', {
       loadingStore.startLoading()
 
       try {
-        const response = await axios.get<ApiResponse>('/boards')
-        if (response.data.status !== ApiError.SUCCESS_STATUS) {
-          throw new ApiError(response.data.status)
+        const response = await axios.get<ApiResponse<Board[]>>('/boards')
+        if (response.data.status !== "success") {
+          throw new ApiError('Failed to fetch boards')
         }
 
         this.boards = response.data.data
