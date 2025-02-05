@@ -40,17 +40,24 @@ const handleLogin = () => {
           <div class="ml-10 flex items-center space-x-4">
             <RouterLink 
               to="/" 
-              class="px-3 py-2 rounded-md text-sm font-medium text-white hover:surface-hover transition-colors"
+              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               v-slot="{ isActive }"
             >
               <span :class="{ 'border-b-2 border-white pb-1': isActive }">Home</span>
             </RouterLink>
             <RouterLink 
               to="/boards" 
-              class="px-3 py-2 rounded-md text-sm font-medium text-white hover:surface-hover transition-colors"
+              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               v-slot="{ isActive }"
             >
               <span :class="{ 'border-b-2 border-white pb-1': isActive }">Boards</span>
+            </RouterLink>
+            <RouterLink 
+              v-if="user.value?.roles?.includes('admin')"
+              to="/user-management" 
+              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+            >
+              User Management
             </RouterLink>
           </div>
         </div>

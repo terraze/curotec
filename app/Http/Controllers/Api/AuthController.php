@@ -73,7 +73,15 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user();
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $user->getRoleNames(),
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+        ]);
     }
 
     public function assignAdminRole(User $user)
