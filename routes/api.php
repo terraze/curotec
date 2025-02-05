@@ -43,4 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/{user}', [UserController::class, 'show']);
     });
+
+    Route::post('/users/{user}/assign-admin', [AuthController::class, 'assignAdminRole']);
+    Route::post('/users/{user}/remove-admin', [AuthController::class, 'removeAdminRole']);
 });
