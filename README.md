@@ -42,6 +42,25 @@ npm run dev
 
 Open http://localhost/
 
+### Problems with the requirements
+
+The assessment requirements are conflicting. Here's why:
+
+"Laravel WebSockets with Laravel Echo and Pusher"
+* Laravel WebSockets (server)
+* Laravel Echo (client)
+* Pusher Protocol (the communication protocol)
+
+"Vue Socket.io integration" - This is a different stack that uses:
+* Socket.IO protocol
+* Socket.IO client
+
+These can't be directly integrated because they use different protocols.
+Laravel WebSockets documentation explicitly mentions it implements the Pusher protocol.
+Socket.IO documentation about its protocol:
+> "Socket.IO is NOT a WebSocket implementation. Although Socket.IO indeed uses WebSocket as a transport when possible, it adds additional metadata to each packet."
+
+As a result, I had to choose one of the two options,m and decided to use Laravel WebSockets + Laravel Echo, following Laravel's official stack.
 ## License
 
 This project is only for evaluation purposes and shall not be distributed or used for other purposes.
